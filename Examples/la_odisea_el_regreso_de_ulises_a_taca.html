@@ -1,0 +1,3615 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ΟΔΥΣΣΕΙΑ · La Odisea de Homero — Edición Completa de 18 Escenas</title>
+  <style>
+    /* ==========================================================================
+       1. SISTEMA DE DISEÑO GRECORROMANO Y TEMAS DINÁMICOS POR ESCENARIO
+       ========================================================================== */
+    :root {
+      --bg-top: #071428;
+      --bg-mid: #102a4e;
+      --bg-bottom: #050d1a;
+      --panel-bg: rgba(9, 22, 44, 0.95);
+      --panel-card: rgba(14, 34, 66, 0.97);
+      --accent-primary: #d4af37;
+      --accent-bright: #f7d774;
+      --accent-secondary: #38bdf8;
+      --accent-glow: rgba(212, 175, 55, 0.3);
+      --border-ornate: rgba(212, 175, 55, 0.48);
+      --text-main: #faf6eb;
+      --text-parchment: #efe6d2;
+      --text-muted: #c2cbd6;
+      --marble-sheen: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(212,175,55,0.04) 50%, rgba(0,0,0,0.28) 100%);
+
+      --font-display: "Palatino Linotype", "Book Antiqua", Palatino, "Times New Roman", Georgia, serif;
+      --font-body: "Book Antiqua", "Palatino Linotype", Georgia, "Times New Roman", serif;
+      --font-ui: "Palatino Linotype", "Book Antiqua", Georgia, serif;
+      --radius-lg: 14px;
+      --radius-md: 10px;
+      --shadow-monument: 0 24px 52px rgba(0, 0, 0, 0.78), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    body[data-theme="cyclops"] {
+      --bg-top: #1a0d0a;
+      --bg-mid: #2e150e;
+      --bg-bottom: #0d0605;
+      --panel-bg: rgba(26, 14, 11, 0.96);
+      --panel-card: rgba(42, 21, 15, 0.97);
+      --accent-primary: #ea580c;
+      --accent-bright: #fdba74;
+      --accent-secondary: #f59e0b;
+      --accent-glow: rgba(234, 88, 12, 0.34);
+      --border-ornate: rgba(251, 146, 60, 0.48);
+    }
+
+    body[data-theme="circe"] {
+      --bg-top: #140c29;
+      --bg-mid: #251549;
+      --bg-bottom: #090514;
+      --panel-bg: rgba(21, 13, 42, 0.96);
+      --panel-card: rgba(34, 21, 66, 0.97);
+      --accent-primary: #c084fc;
+      --accent-bright: #f3e8ff;
+      --accent-secondary: #34d399;
+      --accent-glow: rgba(192, 132, 252, 0.32);
+      --border-ornate: rgba(192, 132, 252, 0.5);
+    }
+
+    body[data-theme="underworld"] {
+      --bg-top: #071417;
+      --bg-mid: #102b30;
+      --bg-bottom: #03090a;
+      --panel-bg: rgba(9, 24, 28, 0.96);
+      --panel-card: rgba(15, 38, 44, 0.97);
+      --accent-primary: #2dd4bf;
+      --accent-bright: #ccfbf1;
+      --accent-secondary: #94a3b8;
+      --accent-glow: rgba(45, 212, 191, 0.3);
+      --border-ornate: rgba(45, 212, 191, 0.45);
+    }
+
+    body[data-theme="sirens"] {
+      --bg-top: #062238;
+      --bg-mid: #0c446b;
+      --bg-bottom: #041321;
+      --panel-bg: rgba(7, 32, 52, 0.95);
+      --panel-card: rgba(11, 49, 79, 0.97);
+      --accent-primary: #38bdf8;
+      --accent-bright: #fde047;
+      --accent-secondary: #22d3ee;
+      --accent-glow: rgba(56, 189, 248, 0.34);
+      --border-ornate: rgba(253, 224, 71, 0.48);
+    }
+
+    body[data-theme="scylla"] {
+      --bg-top: #0b1120;
+      --bg-mid: #172544;
+      --bg-bottom: #050811;
+      --panel-bg: rgba(12, 19, 36, 0.96);
+      --panel-card: rgba(20, 32, 58, 0.97);
+      --accent-primary: #f43f5e;
+      --accent-bright: #fda4af;
+      --accent-secondary: #38bdf8;
+      --accent-glow: rgba(244, 63, 94, 0.34);
+      --border-ornate: rgba(244, 63, 94, 0.48);
+    }
+
+    body[data-theme="ithaca"] {
+      --bg-top: #231109;
+      --bg-mid: #3f1e10;
+      --bg-bottom: #120804;
+      --panel-bg: rgba(33, 17, 10, 0.96);
+      --panel-card: rgba(52, 26, 15, 0.97);
+      --accent-primary: #eab308;
+      --accent-bright: #fef08a;
+      --accent-secondary: #fb923c;
+      --accent-glow: rgba(234, 179, 8, 0.35);
+      --border-ornate: rgba(234, 179, 8, 0.56);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      min-height: 100%;
+      background: radial-gradient(circle at 50% 0%, var(--bg-mid) 0%, var(--bg-top) 52%, var(--bg-bottom) 100%);
+      background-attachment: fixed;
+      color: var(--text-main);
+      font-family: var(--font-body);
+      line-height: 1.65;
+      transition: background 0.6s ease, color 0.4s ease;
+      overflow-x: hidden;
+    }
+
+    .greek-meander-bar {
+      height: 14px;
+      width: 100%;
+      background-color: rgba(0, 0, 0, 0.4);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='14' viewBox='0 0 36 14'%3E%3Cpath d='M0,12 H14 V2 H4 V9 H10 V6 H7 M18,12 H36 M22,12 V2 H32 V9 H26 V6 H29' fill='none' stroke='%23d4af37' stroke-opacity='0.6' stroke-width='1.5'/%3E%3C/svg%3E");
+      background-repeat: repeat-x;
+      border-top: 1px solid var(--border-ornate);
+      border-bottom: 1px solid var(--border-ornate);
+    }
+
+    /* ==========================================================================
+       2. BARRA SUPERIOR MONUMENTAL Y CONTROLES DE MÚSICA
+       ========================================================================== */
+    .top-bar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(6, 12, 24, 0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-ornate);
+    }
+
+    .top-bar-inner {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 10px 16px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      cursor: pointer;
+    }
+
+    .brand-emblem {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid var(--accent-primary);
+      display: grid;
+      place-items: center;
+      background: radial-gradient(circle, var(--accent-glow), rgba(0, 0, 0, 0.65));
+      color: var(--accent-bright);
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.25rem;
+      box-shadow: 0 0 14px var(--accent-glow);
+      flex-shrink: 0;
+    }
+
+    .brand-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.02rem, 2.4vw, 1.28rem);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      font-variant: small-caps;
+      color: var(--accent-bright);
+      display: block;
+      line-height: 1.15;
+    }
+
+    .brand-sub {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      display: block;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .hud-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-ornate);
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: var(--text-parchment);
+    }
+
+    .hud-pill strong {
+      color: var(--accent-bright);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .btn-util, .music-select {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-height: 40px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--accent-primary);
+      background: rgba(12, 22, 40, 0.92);
+      color: var(--accent-bright);
+      font-family: var(--font-ui);
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.16s ease, background 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn-util:hover, .music-select:hover {
+      background: var(--accent-glow);
+      box-shadow: 0 0 14px var(--accent-glow);
+    }
+
+    .btn-util[aria-pressed="false"] {
+      border-color: rgba(148, 163, 184, 0.45);
+      color: var(--text-muted);
+    }
+
+    /* ==========================================================================
+       3. CONTENEDOR PRINCIPAL Y TARJETAS MONUMENTALES
+       ========================================================================== */
+    .stage-container {
+      position: relative;
+      z-index: 10;
+      max-width: 980px;
+      margin: 22px auto 80px;
+      padding: 0 16px;
+    }
+
+    .monument-card {
+      background: var(--panel-bg);
+      background-image: var(--marble-sheen);
+      border: 1.5px solid var(--border-ornate);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-monument);
+      overflow: hidden;
+      animation: fadeRise 0.42s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes fadeRise {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ==========================================================================
+       4. MAPA DE LA TRAVESÍA (MENÚ SELECTOR DE CAPÍTULOS)
+       ========================================================================== */
+    .hub-hero {
+      padding: clamp(22px, 4vw, 34px);
+      text-align: center;
+      border-bottom: 1px solid var(--border-ornate);
+      background: radial-gradient(circle at 50% 0%, var(--accent-glow) 0%, transparent 72%);
+    }
+
+    .hub-kicker {
+      display: inline-block;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--accent-bright);
+      border: 1px solid var(--border-ornate);
+      padding: 4px 14px;
+      border-radius: 999px;
+      margin-bottom: 10px;
+      background: rgba(0, 0, 0, 0.38);
+    }
+
+    .hub-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.65rem, 4.2vw, 2.45rem);
+      font-variant: small-caps;
+      letter-spacing: 0.05em;
+      color: var(--accent-bright);
+      margin-bottom: 10px;
+      text-shadow: 0 3px 14px rgba(0, 0, 0, 0.75);
+    }
+
+    .hub-desc {
+      max-width: 720px;
+      margin: 0 auto 18px;
+      color: var(--text-parchment);
+      font-size: clamp(0.98rem, 2vw, 1.08rem);
+    }
+
+    .session-summary-strip {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .stat-box {
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid var(--border-ornate);
+      border-radius: var(--radius-md);
+      padding: 10px 18px;
+      min-width: 155px;
+    }
+
+    .stat-box span {
+      display: block;
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
+
+    .stat-box strong {
+      font-family: var(--font-display);
+      font-size: 1.35rem;
+      color: var(--accent-bright);
+    }
+
+    .chapters-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      padding: clamp(18px, 3vw, 28px);
+    }
+
+    .chapter-tile {
+      background: var(--panel-card);
+      border: 1.5px solid var(--border-ornate);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+      cursor: pointer;
+      text-align: left;
+      color: var(--text-main);
+    }
+
+    .chapter-tile:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent-bright);
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.65), 0 0 18px var(--accent-glow);
+    }
+
+    .tile-thumb {
+      position: relative;
+      height: 132px;
+      overflow: hidden;
+      border-bottom: 1px solid var(--border-ornate);
+      background: #060d1a;
+    }
+
+    .tile-thumb svg {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .tile-canto-tag {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background: rgba(5, 10, 20, 0.9);
+      border: 1px solid var(--accent-primary);
+      color: var(--accent-bright);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 3px 9px;
+      border-radius: 999px;
+    }
+
+    .tile-status-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 999px;
+    }
+
+    .status-done {
+      background: rgba(16, 185, 129, 0.92);
+      color: #041f15;
+    }
+
+    .status-pending {
+      background: rgba(15, 23, 42, 0.88);
+      color: var(--text-muted);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+    }
+
+    .tile-body {
+      padding: 15px 16px 18px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .tile-title {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      font-variant: small-caps;
+      color: var(--accent-bright);
+      line-height: 1.25;
+      margin-bottom: 4px;
+    }
+
+    .tile-mechanic {
+      font-size: 0.8rem;
+      color: var(--accent-secondary);
+      font-weight: 700;
+    }
+
+    .tile-excerpt {
+      font-size: 0.88rem;
+      color: var(--text-parchment);
+      line-height: 1.5;
+    }
+
+    .tile-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--accent-bright);
+    }
+
+    /* ==========================================================================
+       5. VISTA DE MOMENTO: ILUSTRACIÓN, INDICADOR DE ACTO, NARRACIÓN Y RETO
+       ========================================================================== */
+    .scene-visual {
+      position: relative;
+      width: 100%;
+      background: #050b16;
+      border-bottom: 1px solid var(--border-ornate);
+    }
+
+    .scene-visual svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-height: 270px;
+    }
+
+    .canto-badge {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: rgba(5, 10, 20, 0.92);
+      border: 1px solid var(--accent-primary);
+      color: var(--accent-bright);
+      padding: 5px 13px;
+      border-radius: 999px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+    }
+
+    .moment-pills {
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      display: flex;
+      gap: 6px;
+      background: rgba(5, 10, 20, 0.9);
+      padding: 5px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border-ornate);
+    }
+
+    .moment-dot {
+      padding: 2px 9px;
+      border-radius: 999px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .moment-dot.active {
+      background: var(--accent-primary);
+      color: #080d18;
+    }
+
+    .moment-dot.done {
+      background: rgba(16, 185, 129, 0.85);
+      color: #041f15;
+    }
+
+    .scene-body {
+      padding: clamp(18px, 3.8vw, 32px);
+    }
+
+    .scene-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.45rem, 3.6vw, 2.15rem);
+      font-variant: small-caps;
+      letter-spacing: 0.04em;
+      line-height: 1.2;
+      color: var(--accent-bright);
+      margin-bottom: 6px;
+    }
+
+    .scene-subtitle {
+      font-size: 0.94rem;
+      color: var(--accent-secondary);
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    .narrative-box {
+      background: rgba(0, 0, 0, 0.45);
+      border-left: 3.5px solid var(--accent-primary);
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      padding: 16px 18px;
+      margin-bottom: 14px;
+    }
+
+    .narrative-line {
+      font-family: var(--font-body);
+      font-size: clamp(1.04rem, 2.1vw, 1.16rem);
+      line-height: 1.72;
+      color: var(--text-parchment);
+      margin-bottom: 10px;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.45s ease, transform 0.45s ease;
+    }
+
+    .narrative-line:last-child { margin-bottom: 0; }
+    .narrative-line.visible { opacity: 1; transform: translateY(0); }
+
+    .narrative-controls {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 16px;
+    }
+
+    .btn-skip {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-ornate);
+      color: var(--accent-bright);
+      font-family: var(--font-ui);
+      font-size: 0.8rem;
+      padding: 5px 13px;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+
+    .btn-skip.hidden { visibility: hidden; pointer-events: none; }
+
+    /* ==========================================================================
+       6. MÓDULO DE MINIJUEGO CRONOMETRADO POR MOMENTO
+       ========================================================================== */
+    .challenge-panel {
+      background: rgba(0, 0, 0, 0.56);
+      border: 1.5px solid var(--accent-primary);
+      border-radius: var(--radius-md);
+      padding: 18px 20px;
+      margin-bottom: 22px;
+      box-shadow: inset 0 0 26px rgba(0, 0, 0, 0.55);
+    }
+
+    .challenge-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .challenge-title {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      font-variant: small-caps;
+      color: var(--accent-bright);
+      letter-spacing: 0.04em;
+    }
+
+    .timer-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.84rem;
+      font-weight: 800;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: rgba(239, 68, 68, 0.18);
+      border: 1px solid #f87171;
+      color: #fecaca;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .timer-pill.done {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: #34d399;
+      color: #a7f3d0;
+    }
+
+    .challenge-desc {
+      font-size: 0.95rem;
+      color: var(--text-parchment);
+      margin-bottom: 14px;
+    }
+
+    .action-touch-btn {
+      min-height: 52px;
+      padding: 11px 20px;
+      border-radius: var(--radius-md);
+      border: 1.5px solid var(--accent-bright);
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      color: #07101f;
+      font-family: var(--font-ui);
+      font-size: 0.98rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.12s ease, filter 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      user-select: none;
+    }
+
+    .action-touch-btn:hover { filter: brightness(1.08); }
+    .action-touch-btn:active { transform: scale(0.95); }
+    .action-touch-btn:disabled { opacity: 0.48; cursor: not-allowed; }
+
+    .gauge-track {
+      width: 100%;
+      height: 24px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--border-ornate);
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+      margin: 10px 0 14px;
+    }
+
+    .gauge-zone {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      background: rgba(52, 211, 153, 0.36);
+      border-left: 2px dashed #34d399;
+      border-right: 2px dashed #34d399;
+    }
+
+    .gauge-danger {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      background: rgba(239, 68, 68, 0.42);
+      border-left: 2px solid #ef4444;
+      border-right: 2px solid #ef4444;
+    }
+
+    .gauge-marker {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 12px;
+      margin-left: -6px;
+      background: var(--accent-bright);
+      box-shadow: 0 0 12px var(--accent-bright);
+      border-radius: 4px;
+    }
+
+    .herb-grid, .rune-grid, .shadow-arena {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+    }
+
+    .herb-card, .rune-btn, .shadow-target {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1.5px solid var(--border-ornate);
+      border-radius: var(--radius-md);
+      padding: 13px;
+      cursor: pointer;
+      text-align: center;
+      color: var(--text-main);
+      font-family: var(--font-body);
+      transition: transform 0.15s ease, border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .herb-card:hover, .rune-btn:hover, .shadow-target:hover {
+      border-color: var(--accent-bright);
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .shadow-target.active-ghost {
+      background: rgba(45, 212, 191, 0.26);
+      border-color: #2dd4bf;
+      box-shadow: 0 0 16px rgba(45, 212, 191, 0.4);
+      transform: scale(1.03);
+    }
+
+    /* Panel previo de preparación antes de iniciar cada minijuego */
+    .pregame-launch-box {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0.45));
+      border: 1px dashed var(--border-ornate);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .pregame-meta {
+      flex: 1;
+      min-width: 220px;
+    }
+
+    .pregame-meta-tag {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent-secondary);
+      margin-bottom: 4px;
+    }
+
+    .pregame-brief {
+      font-size: 0.92rem;
+      color: var(--text-parchment);
+      line-height: 1.45;
+    }
+
+    .btn-launch-minigame {
+      min-height: 54px;
+      padding: 12px 22px;
+      border-radius: var(--radius-md);
+      border: 1.5px solid var(--accent-bright);
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-bright));
+      color: #07101f;
+      font-family: var(--font-display);
+      font-size: 0.98rem;
+      font-weight: 800;
+      font-variant: small-caps;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+      transition: transform 0.15s ease, filter 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn-launch-minigame:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.07);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.55), 0 0 16px var(--accent-glow);
+    }
+
+    .btn-launch-minigame:active {
+      transform: scale(0.97);
+    }
+
+    /* ==========================================================================
+       7. TRES OPCIONES DE COMPRENSIÓN (SIN ETIQUETAS REVELADORAS)
+       ========================================================================== */
+    .choices-section { transition: opacity 0.4s ease; }
+    .choices-section.locked { opacity: 0.4; pointer-events: none; }
+
+    .choices-heading {
+      font-family: var(--font-display);
+      font-size: 1.04rem;
+      font-variant: small-caps;
+      letter-spacing: 0.06em;
+      color: var(--accent-bright);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .choices-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .choice-btn {
+      width: 100%;
+      min-height: 64px;
+      text-align: left;
+      padding: 15px 18px;
+      border-radius: var(--radius-md);
+      border: 1.5px solid var(--border-ornate);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, rgba(0, 0, 0, 0.46) 100%);
+      color: var(--text-main);
+      cursor: pointer;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      transition: transform 0.16s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .choice-btn:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent-bright);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5), 0 0 14px var(--accent-glow);
+    }
+
+    .choice-letter {
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.48);
+      border: 1.5px solid var(--accent-primary);
+      color: var(--accent-bright);
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.02rem;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .choice-text {
+      font-family: var(--font-body);
+      font-size: clamp(0.96rem, 2.05vw, 1.06rem);
+      line-height: 1.55;
+      color: var(--text-parchment);
+    }
+
+    /* ==========================================================================
+       8. RETROALIMENTACIÓN DE MOMENTO Y EVALUACIÓN FINAL DE CAPÍTULO
+       ========================================================================== */
+    .eval-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 14px 18px;
+      border-radius: var(--radius-md);
+      margin-bottom: 18px;
+      font-weight: 700;
+    }
+
+    .eval-banner.canonical {
+      background: rgba(16, 185, 129, 0.18);
+      border: 1.5px solid rgba(52, 211, 153, 0.55);
+      color: #a7f3d0;
+    }
+
+    .eval-banner.alternative {
+      background: rgba(245, 158, 11, 0.18);
+      border: 1.5px solid rgba(251, 191, 36, 0.55);
+      color: #fde68a;
+    }
+
+    .score-breakdown {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+      margin: 16px 0;
+    }
+
+    .breakdown-cell {
+      background: rgba(0, 0, 0, 0.46);
+      border: 1px solid var(--border-ornate);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      text-align: center;
+    }
+
+    .breakdown-cell span {
+      display: block;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .breakdown-cell strong {
+      font-family: var(--font-display);
+      font-size: 1.24rem;
+      color: var(--accent-bright);
+    }
+
+    .philology-note {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-ornate);
+      border-radius: var(--radius-md);
+      padding: 15px 18px;
+      margin: 16px 0 22px;
+    }
+
+    .philology-note h4 {
+      font-family: var(--font-display);
+      color: var(--accent-bright);
+      font-size: 0.92rem;
+      font-variant: small-caps;
+      letter-spacing: 0.06em;
+      margin-bottom: 6px;
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .btn-epic {
+      flex: 1;
+      min-width: 220px;
+      min-height: 56px;
+      padding: 14px 24px;
+      border-radius: var(--radius-md);
+      border: 1.5px solid var(--accent-bright);
+      background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-bright) 100%);
+      color: #090e1a;
+      font-family: var(--font-display);
+      font-size: 1.04rem;
+      font-weight: 800;
+      font-variant: small-caps;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+    }
+
+    .btn-secondary {
+      flex: 1;
+      min-width: 200px;
+      min-height: 56px;
+      padding: 14px 22px;
+      border-radius: var(--radius-md);
+      border: 1.5px solid var(--border-ornate);
+      background: rgba(0, 0, 0, 0.48);
+      color: var(--accent-bright);
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 700;
+      font-variant: small-caps;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .toast-notice {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 90;
+      background: #081122;
+      border: 1.5px solid var(--accent-bright);
+      color: var(--text-main);
+      padding: 12px 18px;
+      border-radius: var(--radius-md);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.8);
+      font-size: 0.9rem;
+      font-weight: 700;
+      transform: translateY(130%);
+      opacity: 0;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      max-width: min(380px, 90vw);
+    }
+
+    .toast-notice.show { transform: translateY(0); opacity: 1; }
+
+    @media (max-width: 640px) {
+      .brand-sub { display: none; }
+      .scene-body { padding: 16px 14px 22px; }
+    }
+  </style>
+</head>
+<body data-theme="default">
+  <!-- Barra superior monumental -->
+  <header class="top-bar">
+    <div class="top-bar-inner">
+      <div class="brand" id="btnHomeBrand" role="button" tabindex="0" title="Volver al Mapa de la Travesía">
+        <div class="brand-emblem" aria-hidden="true">Ω</div>
+        <div>
+          <span class="brand-title">ΟΔΥΣΣΕΙΑ · La Odisea</span>
+          <span class="brand-sub">6 Cantos · 18 Escenas · Ambientación Antigua</span>
+        </div>
+      </div>
+
+      <div class="top-actions">
+        <button type="button" id="btnMenuHub" class="btn-util" title="Abrir el selector de capítulos">
+          <span>🏛️</span>
+          <span>Capítulos</span>
+        </button>
+
+        <div class="hud-pill" title="Puntaje acumulado en la sesión actual">
+          <span>🦉 Astucia:</span>
+          <strong id="totalScoreHud">0 / 1800</strong>
+        </div>
+
+        <select id="musicModeSelect" class="music-select" title="Seleccionar ambientación musical">
+          <option value="auto">🎵 Música: Auto</option>
+          <option value="default">🏛️ Egeo (Dorio)</option>
+          <option value="cyclops">🔥 Polifemo (Graves)</option>
+          <option value="circe">✨ Circe (Lidio)</option>
+          <option value="underworld">👻 Hades (Estigio)</option>
+          <option value="sirens">🌊 Sirenas (Etéreo)</option>
+          <option value="scylla">⚡ Escila (Tormenta)</option>
+          <option value="ithaca">👑 Ítaca (Triunfal)</option>
+        </select>
+
+        <button type="button" id="btnAudioToggle" class="btn-util" aria-pressed="true" title="Activar o silenciar música y efectos">
+          <span id="audioIcon">🔊</span>
+          <span id="audioLabel">Audio</span>
+        </button>
+
+        <button type="button" id="btnDownloadHtml" class="btn-util" title="Descargar este recurso como archivo HTML autónomo">
+          <span>⬇️</span>
+          <span>HTML</span>
+        </button>
+      </div>
+    </div>
+    <div class="greek-meander-bar" aria-hidden="true"></div>
+  </header>
+
+  <!-- Escenario principal -->
+  <main class="stage-container" id="appStage" aria-live="polite"></main>
+
+  <!-- Notificación flotante -->
+  <div id="toastNotice" class="toast-notice" role="status" aria-live="polite"></div>
+
+  <script>
+    /* ==========================================================================
+       1. MOTOR MUSICAL PROCEDURAL POLIFÓNICO Y DE EFECTOS (WEB AUDIO API PURO)
+       ========================================================================== */
+    class OdysseyMusicEngine {
+      constructor() {
+        this.ctx = null;
+        this.masterGain = null;
+        this.droneOsc = null;
+        this.droneGain = null;
+        this.enabled = true;
+        this.currentScene = "default";
+        this.overrideScene = "auto";
+        this.loopTimer = null;
+        this.step = 0;
+
+        // Escalas y atmósferas por escenario (frecuencias en Hz)
+        this.profiles = {
+          default: {
+            // Modo Dorio griego (Kithara + bordón marino)
+            drone: 73.42, // D2
+            notes: [146.83, 174.61, 196.0, 220.0, 261.63, 293.66, 220.0, 196.0],
+            wave: "triangle",
+            tempo: 620
+          },
+          cyclops: {
+            // Graves profundos de tympanon y eco cavernoso
+            drone: 55.0, // A1
+            notes: [82.41, 87.31, 110.0, 82.41, 73.42, 82.41, 65.41, 82.41],
+            wave: "sawtooth",
+            tempo: 740
+          },
+          circe: {
+            // Escala Lidia mística con arpa cristalina
+            drone: 98.0, // G2
+            notes: [196.0, 246.94, 293.66, 369.99, 440.0, 369.99, 293.66, 246.94],
+            wave: "sine",
+            tempo: 540
+          },
+          underworld: {
+            // Drones oscuros de ultratumba e intervalos espectrales
+            drone: 49.0, // G1
+            notes: [98.0, 103.83, 138.59, 103.83, 92.5, 98.0, 130.81, 92.5],
+            wave: "sine",
+            tempo: 880
+          },
+          sirens: {
+            // Registro agudo hipnótico y ondulación etérea
+            drone: 130.81, // C3
+            notes: [523.25, 659.25, 783.99, 987.77, 783.99, 659.25, 587.33, 659.25],
+            wave: "sine",
+            tempo: 580
+          },
+          scylla: {
+            // Pulso acelerado de tormenta y percusión dramática
+            drone: 65.41, // C2
+            notes: [130.81, 138.59, 155.56, 196.0, 155.56, 138.59, 130.81, 98.0],
+            wave: "triangle",
+            tempo: 340
+          },
+          ithaca: {
+            // Modo Mixolidio solemne y triunfal
+            drone: 82.41, // E2
+            notes: [164.81, 207.65, 246.94, 293.66, 329.63, 293.66, 246.94, 207.65],
+            wave: "triangle",
+            tempo: 520
+          }
+        };
+      }
+
+      init() {
+        if (!this.enabled) return null;
+        if (!this.ctx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (!AudioCtx) return null;
+          this.ctx = new AudioCtx();
+          this.masterGain = this.ctx.createGain();
+          this.masterGain.gain.setValueAtTime(0.22, this.ctx.currentTime);
+          this.masterGain.connect(this.ctx.destination);
+        }
+        if (this.ctx.state === "suspended") {
+          this.ctx.resume().catch(() => {});
+        }
+        if (!this.loopTimer) {
+          this.startAmbienceLoop();
+        }
+        return this.ctx;
+      }
+
+      setScene(sceneKey) {
+        this.currentScene = sceneKey || "default";
+        this.restartAmbience();
+      }
+
+      setOverride(mode) {
+        this.overrideScene = mode;
+        this.restartAmbience();
+      }
+
+      getActiveProfile() {
+        const key = this.overrideScene === "auto" ? this.currentScene : this.overrideScene;
+        return this.profiles[key] || this.profiles.default;
+      }
+
+      restartAmbience() {
+        if (!this.enabled || !this.ctx) return;
+        this.stopAmbienceLoop();
+        this.startAmbienceLoop();
+      }
+
+      stopAmbienceLoop() {
+        if (this.loopTimer) {
+          clearInterval(this.loopTimer);
+          this.loopTimer = null;
+        }
+        if (this.droneOsc && this.ctx) {
+          try {
+            this.droneOsc.stop();
+            this.droneOsc.disconnect();
+          } catch (e) {}
+          this.droneOsc = null;
+        }
+      }
+
+      startAmbienceLoop() {
+        if (!this.enabled || !this.ctx) return;
+        const prof = this.getActiveProfile();
+        const now = this.ctx.currentTime;
+
+        // Bordón continuo filtrado
+        this.droneOsc = this.ctx.createOscillator();
+        this.droneGain = this.ctx.createGain();
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = "lowpass";
+        filter.frequency.setValueAtTime(240, now);
+
+        this.droneOsc.type = "sine";
+        this.droneOsc.frequency.setValueAtTime(prof.drone, now);
+        this.droneGain.gain.setValueAtTime(0.08, now);
+
+        this.droneOsc.connect(filter);
+        filter.connect(this.droneGain);
+        this.droneGain.connect(this.masterGain);
+        this.droneOsc.start(now);
+
+        this.step = 0;
+        this.loopTimer = setInterval(() => {
+          if (!this.enabled || !this.ctx || this.ctx.state !== "running") return;
+          const freq = prof.notes[this.step % prof.notes.length];
+          this.step++;
+          this.pluckNote(freq, prof.wave);
+        }, prof.tempo);
+      }
+
+      pluckNote(freq, waveType) {
+        if (!this.ctx || !this.masterGain) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        const filter = this.ctx.createBiquadFilter();
+
+        filter.type = "lowpass";
+        filter.frequency.setValueAtTime(1100, now);
+
+        osc.type = waveType;
+        osc.frequency.setValueAtTime(freq, now);
+
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.linearRampToValueAtTime(0.14, now + 0.03);
+        gain.gain.exponentialRampToValueAtTime(0.0008, now + 0.75);
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.masterGain);
+
+        osc.start(now);
+        osc.stop(now + 0.78);
+      }
+
+      toggle() {
+        this.enabled = !this.enabled;
+        if (this.enabled) {
+          this.init();
+          this.playClick();
+        } else {
+          this.stopAmbienceLoop();
+        }
+        return this.enabled;
+      }
+
+      playClick() {
+        const ctx = this.init();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(560, now);
+        osc.frequency.exponentialRampToValueAtTime(240, now + 0.07);
+        gain.gain.setValueAtTime(0.22, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+        osc.start(now);
+        osc.stop(now + 0.085);
+      }
+
+      playTick(urgent = false) {
+        const ctx = this.init();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(urgent ? 880 : 620, now);
+        gain.gain.setValueAtTime(urgent ? 0.14 : 0.07, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.045);
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+        osc.start(now);
+        osc.stop(now + 0.05);
+      }
+
+      playTriumph() {
+        const ctx = this.init();
+        if (!ctx) return;
+        [293.66, 369.99, 440.0, 587.33].forEach((f, i) => {
+          setTimeout(() => this.pluckNote(f, "triangle"), i * 95);
+        });
+      }
+
+      playDramatic() {
+        const ctx = this.init();
+        if (!ctx) return;
+        [146.83, 138.59, 110.0].forEach((f, i) => {
+          setTimeout(() => this.pluckNote(f, "sawtooth"), i * 110);
+        });
+      }
+    }
+
+    const audio = new OdysseyMusicEngine();
+
+    /* ==========================================================================
+       2. ILUSTRACIONES SVG DETALLADAS ESTILO CERÁMICA GRIEGA DE FIGURAS NEGRAS/ROJAS
+       ========================================================================== */
+    const ILLUSTRATIONS = {
+      cyclops: `
+        <svg viewBox="0 0 800 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ánfora y relieve de la caverna de Polifemo con su rebaño y fogata">
+          <defs>
+            <linearGradient id="bgCyc" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#140907"/><stop offset="100%" stop-color="#35160c"/>
+            </linearGradient>
+            <radialGradient id="emberCyc" cx="24%" cy="78%" r="55%">
+              <stop offset="0%" stop-color="#f97316" stop-opacity="0.6"/>
+              <stop offset="100%" stop-color="#140907" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+          <rect width="800" height="260" fill="url(#bgCyc)"/>
+          <rect width="800" height="260" fill="url(#emberCyc)"/>
+          <!-- Estalactitas y peñasco -->
+          <path d="M0,0 L800,0 L800,62 L745,30 L705,80 L660,25 L610,68 L545,22 L475,54 L410,18 L335,60 L265,22 L195,72 L125,26 L65,66 L0,32 Z" fill="#090403" stroke="#ea580c" stroke-opacity="0.4"/>
+          <path d="M555,255 L575,112 Q635,84 695,118 L725,255 Z" fill="#1d100c" stroke="#fdba74" stroke-width="1.6"/>
+          <!-- Polifemo -->
+          <g transform="translate(350, 36)">
+            <path d="M38,220 L46,118 Q26,86 50,58 Q72,26 110,28 Q146,30 158,64 Q176,94 154,124 L166,220 Z" fill="#090403" stroke="#f97316" stroke-width="2"/>
+            <ellipse cx="104" cy="54" rx="16" ry="9" fill="#ef4444"/>
+            <circle cx="104" cy="54" r="5" fill="#fef08a"/>
+            <path d="M164,84 L194,220 L178,220 L152,92 Z" fill="#451a03" stroke="#fdba74" stroke-width="1.2"/>
+          </g>
+          <!-- Fogata y estaca -->
+          <g transform="translate(88, 192)">
+            <path d="M12,50 Q45,10 78,50 Z" fill="#f97316"/>
+            <path d="M26,50 Q45,24 64,50 Z" fill="#fde047"/>
+            <line x1="-6" y1="36" x2="118" y2="44" stroke="#fdba74" stroke-width="5.5" stroke-linecap="round"/>
+          </g>
+          <!-- Carnero de vellón espeso con Ulises oculto -->
+          <g transform="translate(212, 162)">
+            <path d="M25,45 Q20,20 45,18 Q65,12 85,18 Q108,22 104,45 Q102,65 80,66 L42,66 Q22,64 25,45 Z" fill="#f1ebd9" stroke="#ea580c" stroke-width="1.6"/>
+            <circle cx="108" cy="36" r="14" fill="#d6cbb5"/>
+            <path d="M108,25 Q128,18 124,38 Q118,48 106,42" fill="none" stroke="#ea580c" stroke-width="3"/>
+            <line x1="42" y1="65" x2="40" y2="88" stroke="#9a3412" stroke-width="4"/>
+            <line x1="84" y1="65" x2="86" y2="88" stroke="#9a3412" stroke-width="4"/>
+          </g>
+        </svg>
+      `,
+      circe: `
+        <svg viewBox="0 0 800 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Palacio de Circe en Eea con ánforas griegas, telar dorado, copa de pócima y hierba moly">
+          <rect width="800" height="260" fill="#120924"/>
+          <radialGradient id="auraCirce" cx="50%" cy="45%" r="50%">
+            <stop offset="0%" stop-color="#c084fc" stop-opacity="0.4"/>
+            <stop offset="100%" stop-color="#120924" stop-opacity="0"/>
+          </radialGradient>
+          <rect width="800" height="260" fill="url(#auraCirce)"/>
+          <g fill="#1d1038" stroke="#c084fc" stroke-width="1.4">
+            <rect x="75" y="24" width="32" height="216"/><rect x="66" y="16" width="50" height="10"/>
+            <rect x="693" y="24" width="32" height="216"/><rect x="684" y="16" width="50" height="10"/>
+          </g>
+          <!-- Telar de Circe -->
+          <g transform="translate(150, 66)" stroke="#f3e8ff" stroke-opacity="0.65" fill="none">
+            <rect x="0" y="0" width="90" height="150" stroke-width="2.5"/>
+            <line x1="22" y1="0" x2="22" y2="150"/><line x1="45" y1="0" x2="45" y2="150"/><line x1="68" y1="0" x2="68" y2="150"/>
+            <path d="M0,45 Q45,62 90,45 M0,95 Q45,78 90,95" stroke="#c084fc" stroke-width="2"/>
+          </g>
+          <!-- Circe con copa y vara -->
+          <g transform="translate(345, 30)">
+            <path d="M32,32 L44,12 L56,30 L68,12 L80,32" fill="none" stroke="#f3e8ff" stroke-width="2.2"/>
+            <circle cx="56" cy="44" r="16" fill="#0b0517" stroke="#c084fc" stroke-width="2"/>
+            <path d="M20,220 L34,74 Q56,62 78,74 L94,220 Z" fill="#0b0517" stroke="#c084fc" stroke-width="2"/>
+            <path d="M76,88 L122,72" stroke="#f3e8ff" stroke-width="3"/>
+            <path d="M114,52 L134,52 L128,70 L120,70 Z" fill="#facc15"/>
+            <line x1="32" y1="90" x2="2" y2="46" stroke="#34d399" stroke-width="2.5"/>
+            <circle cx="2" cy="46" r="5" fill="#34d399"/>
+          </g>
+          <!-- Planta Moly -->
+          <g transform="translate(565, 128)">
+            <ellipse cx="42" cy="95" rx="22" ry="10" fill="#090514" stroke="#c084fc" stroke-width="1.5"/>
+            <path d="M42,90 L42,34" stroke="#34d399" stroke-width="3.5"/>
+            <path d="M42,68 Q18,54 24,40 Q38,50 42,68" fill="#34d399"/>
+            <path d="M42,60 Q66,46 60,32 Q46,42 42,60" fill="#34d399"/>
+            <circle cx="42" cy="26" r="11" fill="#ffffff" stroke="#c084fc" stroke-width="2"/>
+            <text x="18" y="118" fill="#6ee7b7" font-size="12" font-family="serif" font-weight="bold">MOLY</text>
+          </g>
+        </svg>
+      `,
+      underworld: `
+        <svg viewBox="0 0 800 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="El Inframundo de Hades con Ulises, el foso ritual, la barca de Caronte y el espectro de Tiresias">
+          <rect width="800" height="260" fill="#050e10"/>
+          <radialGradient id="styxGlow" cx="65%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#2dd4bf" stop-opacity="0.34"/>
+            <stop offset="100%" stop-color="#050e10" stop-opacity="0"/>
+          </radialGradient>
+          <rect width="800" height="260" fill="url(#styxGlow)"/>
+          <!-- Sauces estériles -->
+          <g stroke="#1e3a3f" stroke-width="3" fill="none" opacity="0.75">
+            <path d="M85,235 Q80,140 55,60 M80,130 Q110,95 125,65"/>
+            <path d="M720,235 Q725,140 750,65 M725,135 Q690,95 675,70"/>
+          </g>
+          <!-- Ulises con espada -->
+          <g transform="translate(215, 74)">
+            <circle cx="45" cy="24" r="13" fill="#09171a" stroke="#2dd4bf" stroke-width="1.8"/>
+            <path d="M22,156 L32,44 Q45,38 58,44 L68,156 Z" fill="#09171a" stroke="#2dd4bf" stroke-width="1.8"/>
+            <line x1="58" y1="68" x2="112" y2="95" stroke="#ccfbf1" stroke-width="3"/>
+          </g>
+          <!-- Foso ritual -->
+          <ellipse cx="385" cy="222" rx="68" ry="16" fill="#020607" stroke="#2dd4bf" stroke-width="2"/>
+          <path d="M360,215 Q350,185 365,165 M395,215 Q410,180 392,155" fill="none" stroke="#2dd4bf" stroke-opacity="0.6" stroke-width="2"/>
+          <!-- Tiresias -->
+          <g transform="translate(495, 42)" opacity="0.92">
+            <path d="M30,192 Q25,115 38,68 Q55,44 74,68 Q88,115 82,192 Z" fill="rgba(45, 212, 191, 0.16)" stroke="#ccfbf1" stroke-width="1.8" stroke-dasharray="5 3"/>
+            <circle cx="56" cy="44" r="15" fill="rgba(45, 212, 191, 0.2)" stroke="#ccfbf1" stroke-width="1.8"/>
+            <line x1="94" y1="22" x2="94" y2="192" stroke="#facc15" stroke-width="3"/>
+            <circle cx="94" cy="20" r="6" fill="#facc15"/>
+          </g>
+        </svg>
+      `,
+      sirens: `
+        <svg viewBox="0 0 800 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Trirreme griego con Ulises atado al mástil frente a los escollos de las Sirenas aladas">
+          <rect width="800" height="260" fill="#062238"/>
+          <circle cx="640" cy="75" r="52" fill="#fde047" opacity="0.24"/>
+          <g fill="none" stroke="#fde047" stroke-opacity="0.42" stroke-width="1.6">
+            <circle cx="620" cy="95" r="42"/><circle cx="620" cy="95" r="82"/>
+            <circle cx="620" cy="95" r="126"/><circle cx="620" cy="95" r="172"/>
+          </g>
+          <path d="M525,222 L565,110 L620,92 L675,122 L755,222 Z" fill="#081b2e" stroke="#fde047" stroke-width="1.6"/>
+          <g transform="translate(592, 48)">
+            <path d="M18,44 Q-12,16 5,4 Q22,16 25,36" fill="#fde047"/>
+            <path d="M34,44 Q64,16 47,4 Q30,16 27,36" fill="#fde047"/>
+            <circle cx="26" cy="24" r="7" fill="#fef9c3"/>
+            <path d="M18,32 L34,32 L38,56 L14,56 Z" fill="#38bdf8"/>
+          </g>
+          <g transform="translate(105, 68)">
+            <line x1="160" y1="10" x2="160" y2="128" stroke="#fde047" stroke-width="5"/>
+            <circle cx="149" cy="64" r="8" fill="#38bdf8"/>
+            <rect x="143" y="73" width="12" height="36" rx="4" fill="#38bdf8"/>
+            <line x1="140" y1="82" x2="164" y2="82" stroke="#fde047" stroke-width="3"/>
+            <line x1="140" y1="95" x2="164" y2="95" stroke="#fde047" stroke-width="3"/>
+            <path d="M35,118 Q160,152 285,118 L260,142 L60,142 Z" fill="#041321" stroke="#fde047" stroke-width="2"/>
+            <g stroke="#38bdf8" stroke-width="2.2">
+              <line x1="88" y1="135" x2="66" y2="172"/><line x1="120" y1="135" x2="98" y2="172"/>
+              <line x1="192" y1="135" x2="170" y2="172"/><line x1="224" y1="135" x2="202" y2="172"/>
+            </g>
+          </g>
+          <path d="M0,212 Q130,194 260,212 T520,212 T800,212 L800,260 L0,260 Z" fill="#041526" stroke="#38bdf8" stroke-width="1.2"/>
+        </svg>
+      `,
+      scylla: `
+        <svg viewBox="0 0 800 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="El estrecho entre Escila y el vórtice marino de Caribdis">
+          <rect width="800" height="260" fill="#090f1d"/>
+          <polyline points="410,10 392,58 416,62 396,112" fill="none" stroke="#fda4af" stroke-width="2.2" opacity="0.78"/>
+          <path d="M0,0 L165,0 L130,115 L155,260 L0,260 Z" fill="#0f172a" stroke="#f43f5e" stroke-width="1.6"/>
+          <g fill="none" stroke="#f43f5e" stroke-width="4" stroke-linecap="round">
+            <path d="M120,75 Q185,35 225,52"/><path d="M125,95 Q198,68 242,88"/>
+            <path d="M122,115 Q190,105 232,126"/><path d="M118,135 Q178,138 215,158"/>
+          </g>
+          <g fill="#fda4af">
+            <circle cx="225" cy="52" r="6"/><circle cx="242" cy="88" r="6"/>
+            <circle cx="232" cy="126" r="6"/><circle cx="215" cy="158" r="6"/>
+          </g>
+          <g transform="translate(635, 195)">
+            <ellipse cx="0" cy="0" rx="125" ry="38" fill="#040812" stroke="#38bdf8" stroke-width="2.5"/>
+            <ellipse cx="0" cy="4" rx="85" ry="24" fill="none" stroke="#38bdf8" stroke-width="2" stroke-dasharray="12 6"/>
+            <ellipse cx="0" cy="8" rx="45" ry="12" fill="none" stroke="#fda4af" stroke-width="2"/>
+          </g>
+          <g transform="translate(335, 148)">
+            <line x1="65" y1="0" x2="65" y2="55" stroke="#fda4af" stroke-width="3"/>
+            <path d="M10,52 Q65,74 120,52 L106,66 L24,66 Z" fill="#050811" stroke="#38bdf8" stroke-width="2"/>
+          </g>
+        </svg>
+      `,
+      ithaca: `
+        <svg viewBox="0 0 800 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Salón del trono de Ítaca con las doce hachas alineadas y el arco de Odiseo">
+          <rect width="800" height="260" fill="#1f0e07"/>
+          <radialGradient id="hallTorch" cx="50%" cy="35%" r="55%">
+            <stop offset="0%" stop-color="#eab308" stop-opacity="0.38"/>
+            <stop offset="100%" stop-color="#1f0e07" stop-opacity="0"/>
+          </radialGradient>
+          <rect width="800" height="260" fill="url(#hallTorch)"/>
+          <g fill="#2e150b" stroke="#eab308" stroke-width="1.4">
+            <rect x="70" y="20" width="34" height="220"/><rect x="696" y="20" width="34" height="220"/>
+          </g>
+          <g transform="translate(275, 118)" stroke="#fef08a" stroke-width="2" fill="none">
+            <line x1="20" y1="88" x2="20" y2="26"/><circle cx="20" cy="20" r="8"/>
+            <line x1="60" y1="88" x2="60" y2="26"/><circle cx="60" cy="20" r="8"/>
+            <line x1="100" y1="88" x2="100" y2="26"/><circle cx="100" cy="20" r="8"/>
+            <line x1="140" y1="88" x2="140" y2="26"/><circle cx="140" cy="20" r="8"/>
+            <line x1="180" y1="88" x2="180" y2="26"/><circle cx="180" cy="20" r="8"/>
+            <line x1="220" y1="88" x2="220" y2="26"/><circle cx="220" cy="20" r="8"/>
+            <line x1="-25" y1="20" x2="255" y2="20" stroke="#fb923c" stroke-width="2.5"/>
+            <polygon points="255,20 243,15 243,25" fill="#fef08a" stroke="none"/>
+          </g>
+          <g transform="translate(145, 76)">
+            <circle cx="38" cy="22" r="13" fill="#120804" stroke="#eab308" stroke-width="2"/>
+            <path d="M18,145 L26,42 Q38,36 50,42 L58,145 Z" fill="#120804" stroke="#eab308" stroke-width="2"/>
+            <path d="M72,18 Q106,62 72,106" fill="none" stroke="#fef08a" stroke-width="3.5"/>
+            <line x1="72" y1="18" x2="54" y2="62" stroke="#eab308" stroke-width="1.5"/>
+            <line x1="72" y1="106" x2="54" y2="62" stroke="#eab308" stroke-width="1.5"/>
+          </g>
+        </svg>
+      `
+    };
+
+    /* ==========================================================================
+       3. ESTRUCTURA DE 6 CAPÍTULOS × 3 MOMENTOS SECUENCIALES (18 ESCENAS)
+       ========================================================================== */
+    const CHAPTERS = [
+      {
+        id: "cyclops",
+        number: "I",
+        canto: "Canto IX · Tierra de los Cíclopes",
+        theme: "cyclops",
+        title: "La Caverna de Polifemo",
+        excerpt: "3 momentos: Forja de la estaca al rojo vivo, fuga bajo los carneros y huida entre peñascos.",
+        illustration: ILLUSTRATIONS.cyclops,
+        moments: [
+          {
+            title: "Momento 1: La Estaca de Olivo en las Brasas",
+            subtitle: "Polifemo duerme vencido por el vino puro de Ismaro; el tiempo corre antes de su despertar.",
+            lines: [
+              "Tras embriagar al cíclope con tres copas del vino negro de Marón, ves caer su enorme cabeza hacia atrás. Sus ronquidos hacen vibrar las paredes de la gruta.",
+              "Toma la gran clava de olivo verde que habéis desbastado y hunde su punta en el rescoldo ardiente hasta que brille como un tizón encendido."
+            ],
+            game: {
+              type: "rapid_heat",
+              shortName: "Forja de Brasas",
+              brief: "Pulsa sin parar para sostener el calor ≥85% antes de que el fuego se enfríe.",
+              title: "🔥 Forja de Brasas (Dificultad Alta · 10s)",
+              desc: "El fuego se enfría velozmente. Pulsa sin descanso para llevar el calor por encima del 85% y sostenerlo 1 segundo antes de que expire el tiempo.",
+              timeLimit: 10
+            },
+            choices: [
+              {
+                id: "A",
+                isCanonical: true,
+                text: "Cuando el gigante preguntó tu nombre antes de dormirse, responderle que te llamas 'Nadie' (Outis) para que ningún otro cíclope acuda en su auxilio al oír sus gritos.",
+                outcome: "Al clavar la estaca incandescente en su único ojo, Polifemo brama pidiendo ayuda, pero cuando sus vecinos preguntan quién lo mata, responde: '¡Nadie me mata!', haciendo que se marchen creyéndolo enfermo.",
+                philology: "Fiel al Canto IX (vv. 364-414): el juego lingüístico entre Outis ('Nadie') y mêtis ('astucia') es uno de los momentos cumbre del poema."
+              },
+              {
+                id: "B",
+                isCanonical: false,
+                text: "Proclamar a gritos tu linaje de Ítaca justo antes de clavar la estaca para que el monstruo sepa qué héroe aqueo lo castiga.",
+                outcome: "Tu grito despierta a Polifemo medio segundo antes del golpe; el gigante desvía el tronco con su brazo y aplasta la salida de la cueva.",
+                philology: "Odiseo solo revela su verdadero nombre mucho después, ya embarcado en el mar, cometiendo entonces un acto de soberbia (hybris)."
+              },
+              {
+                id: "C",
+                isCanonical: false,
+                text: "Clavar tu espada de bronce directamente en el corazón del gigante mientras duerme para acabar con él de un solo golpe.",
+                outcome: "Aunque logras herirlo de muerte, su cuerpo colosal cae bloqueando la roca del umbral, condenando a toda tu tripulación a morir encerrada.",
+                philology: "Homero explica explícitamente (Canto IX, vv. 299-305) que Odiseo renunció a matarlo con la espada porque nadie más podía mover el peñasco."
+              }
+            ]
+          },
+          {
+            title: "Momento 2: El Escrutinio del Rebaño al Amanecer",
+            subtitle: "Ciego y furioso, Polifemo palpa cada animal que cruza el umbral.",
+            lines: [
+              "Al despuntar la aurora, los machos del rebaño balan impacientes por salir a los pastos. Polifemo retira la losa y se sienta en la entrada con los brazos abiertos.",
+              "Debes avanzar en completo silencio oculto bajo el rebaño cada vez que el gigante aparte sus manos."
+            ],
+            game: {
+              type: "stealth_sweep",
+              shortName: "Sigilo Bajo el Rebaño",
+              brief: "Avanza solo cuando Polifemo tenga las manos en alto y no esté palpando.",
+              title: "🐑 Sigilo Bajo el Rebaño (12s)",
+              desc: "Mantén pulsado 'Avanzar' solo cuando el radar indique 'MANOS EN ALTO'. Si te mueves mientras palpa, perderás tiempo.",
+              timeLimit: 12
+            },
+            choices: [
+              {
+                id: "A",
+                isCanonical: false,
+                text: "Soltar los carneros de golpe para provocar una estampida y correr agachados entre sus patas hacia la salida.",
+                outcome: "El estrépito alerta al cíclope, que cierra la entrada con su cuerpo y atrapa a tus hombres en la penumbra.",
+                philology: "La fuga requería silencio absoluto y aprovechamiento del afecto del pastor por su rebaño."
+              },
+              {
+                id: "B",
+                isCanonical: true,
+                text: "Atar de tres en tres a los carneros con mimbres trenzados para ocultar a cada compañero bajo el animal central, y aferrarte tú al vellón del vientre del carnero guía.",
+                outcome: "Polifemo palpa los lomos superiores sin advertir a los hombres debajo. Detiene un instante al gran carnero que carga tu peso, pero finalmente lo deja pasar.",
+                philology: "Fiel al Canto IX (vv. 424-463): Odiseo viaja bajo el vientre del carnero mayor, el último en salir."
+              },
+              {
+                id: "C",
+                isCanonical: false,
+                text: "Disfrazaros con pieles de oveja recién cortadas y caminar a cuatro patas junto a las hembras.",
+                outcome: "Al acariciar los lomos, el tacto experto del pastor detecta de inmediato las pieles sueltas sobre vuestros hombros.",
+                philology: "Solo ocultándose bajo carneros vivos podía superarse la inspección táctil de Polifemo."
+              }
+            ]
+          },
+          {
+            title: "Momento 3: Lluvia de Peñascos en la Bahía",
+            subtitle: "Desde la playa, Polifemo arranca cumbres de montes y las arroja hacia vuestra nave.",
+            lines: [
+              "Ya a bordo del trirreme y con el rebaño embarcado, no resistes la tentación de gritarle tu verdadero nombre desde el mar.",
+              "Enfurecido, Polifemo invoca la maldición de su padre Poseidón y lanza enormes peñascos que levantan olas gigantescas."
+            ],
+            game: {
+              type: "dodge_rocks",
+              shortName: "Esquiva de Peñascos",
+              brief: "Vira entre Babor, Centro y Estribor para esquivar 5 peñascos antes de agotar el tiempo.",
+              title: "🪨 Esquiva de Peñascos (12s)",
+              desc: "Mueve el trirreme a Babor o Estribor para esquivar las 5 rocas que caen antes de que expire el cronómetro.",
+              timeLimit: 12
+            },
+            choices: [
+              {
+                id: "A",
+                isCanonical: false,
+                text: "Detener los remos y ofrecerle devolver parte del rebaño si retira su maldición ante Poseidón.",
+                outcome: "Un segundo peñasco cae a escasos palmos de la popa y casi destroza el timón.",
+                philology: "Los cíclopes desprecian las leyes de hospitalidad y las súplicas humanas."
+              },
+              {
+                id: "B",
+                isCanonical: false,
+                text: "Desplegar inmediatamente la vela blanca en la bahía cerrada para aprovechar el viento de tierra.",
+                outcome: "El viento de tierra empuja la proa de vuelta hacia la costa donde aguarda el gigante.",
+                philology: "Para salir de la ensenada era indispensable remar con fuerza hacia mar abierto."
+              },
+              {
+                id: "C",
+                isCanonical: true,
+                text: "Ordenar a tus compañeros que remen con todas sus fuerzas hacia mar abierto, ignorando las súplicas de que calles mientras os alejáis del alcance de sus tiros.",
+                outcome: "Gracias al empuje desesperado de los remos, la nave alcanza la isla de las cabras donde aguarda el resto de la flota.",
+                philology: "Fiel al Canto IX (vv. 488-542): el impulso de los remeros salva la nave tras el primer impacto cercano a la proa."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        id: "circe",
+        number: "II",
+        canto: "Canto X · La Isla de Eea",
+        theme: "circe",
+        title: "El Palacio de Circe",
+        excerpt: "3 momentos: La hierba moly de Hermes, el duelo con la espada y el rumbo hacia el Hades.",
+        illustration: ILLUSTRATIONS.circe,
+        moments: [
+          {
+            title: "Momento 1: El Encuentro con Hermes en el Bosque",
+            subtitle: "Antes de cruzar los umbrales de piedra pulida, un dios te entrega el antídoto sagrado.",
+            lines: [
+              "Tus exploradores han sido convertidos en cerdos tras beber el kykeon de Circe. Marchas solo por los valles sagrados de Eea.",
+              "Hermes detiene tu paso y arranca de la tierra una planta misteriosa que los dioses llaman 'moly'."
+            ],
+            game: {
+              type: "herb_timed",
+              shortName: "Raíz de Moly",
+              brief: "Elige la ficha que describe con exactitud el moly sagrado antes de que cierre el sendero.",
+              title: "🌿 Raíz de Moly (9s)",
+              desc: "Identifica rápidamente la descripción homérica exacta del moly entre las especies del bosque antes de que el hechizo cierre el sendero.",
+              timeLimit: 9
+            },
+            choices: [
+              {
+                id: "A",
+                isCanonical: true,
+                text: "Guardar la raíz negra y flor blanca del moly en tu pecho para comerla antes de probar la copa de oro que te ofrecerá Circe.",
+                outcome: "Protegido por el antídoto divino, entras con paso firme en el palacio de la hechicera.",
+                philology: "Fiel al Canto X (vv. 302-306): Homero describe el moly con raíz negra y flor blanca como la leche."
+              },
+              {
+                id: "B",
+                isCanonical: false,
+                text: "Machacar la planta y arrojarla al pozo del palacio para envenenar las aguas de la diosa.",
+                outcome: "El moly solo protege a quien lo ingiere; al beber tú de su copa sin protección, sucumbes al encantamiento.",
+                philology: "Hermes entrega la planta como talismán preventivo personal para Odiseo."
+              },
+              {
+                id: "C",
+                isCanonical: false,
+                text: "Pedirle a Hermes que sea él quien entre al palacio y obligue a Circe a liberar a tus hombres.",
+                outcome: "Hermes recuerda que los dioses no sustituyen el valor de los mortales y desaparece hacia el Olimpo.",
+                philology: "En la Odisea, la ayuda divina orienta al héroe, pero nunca reemplaza su acción directa."
+              }
+            ]
+          },
+          {
+            title: "Momento 2: La Copa de Oro y la Vara Mágica",
+            subtitle: "Circe te sirve el brebaje y te golpea con su vara ordenándote ir a la pocilga.",
+            lines: [
+              "Sentado en un trono de clavos de plata, bebes el filtro de queso, harina, miel y vino de Pramno.",
+              "Circe te toca con su vara mágica, pero tu forma humana permanece intacta."
+            ],
+            game: {
+              type: "sword_reflex",
+              shortName: "Reflejo de Hermes",
+              brief: "Desenvaina la espada cuando el marcador cruce la franja brillante (68%-86%).",
+              title: "⚔️ Reflejo de Hermes (9s)",
+              desc: "Pulsa 'Desenvainar Espada' justo cuando el indicador cruce la ventana brillante tras el toque de la vara.",
+              timeLimit: 9
+            },
+            choices: [
+              {
+                id: "A",
+                isCanonical: false,
+                text: "Herir a Circe en el hombro para impedirle pronunciar nuevos conjuros.",
+                outcome: "Como diosa inmortal, Circe se desvanece en niebla y deja a tus compañeros atrapados en forma animal.",
+                philology: "Herir a una deidad hubiera impedido obtener su ayuda indispensable para el viaje."
+              },
+              {
+                id: "B",
+                isCanonical: true,
+                text: "Abalanzarte con la espada desenvainada como si fueras a matarla y exigirle que jure por los dioses bienaventurados no tramar ningún otro mal contra ti.",
+                outcome: "Asombrada al ver fallar su magia, Circe reconoce al astuto Odiseo y pronuncia el gran juramento solemne.",
+                philology: "Fiel al Canto X (vv. 321-347): la combinación de la hierba divina y el juramento sagrado somete a la hechicera."
+              },
+              {
+                id: "C",
+                isCanonical: false,
+                text: "Aceptar de inmediato su banquete y su lecho antes de que devuelva la forma humana a tus amigos.",
+                outcome: "Pierdes la ventaja del momento y tus hombres permanecen encerrados en las pocilgas.",
+                philology: "En el poema, Odiseo se niega a probar bocado hasta ver a sus compañeros restaurados como hombres."
+              }
+            ]
+          },
+          {
+            title: "Momento 3: El Rumbo hacia el Océano Tenebroso",
+            subtitle: "Tras un año en Eea, Circe revela que debes consultar al adivino Tiresias.",
+            lines: [
+              "Tus compañeros suplican partir hacia Ítaca. Circe accede, pero advierte que antes debes viajar hasta la morada de Hades.",
+              "No necesitarás piloto: el soplo del viento Bóreas impulsará tu nave si orientas bien las velas."
+            ],
+            game: {
+              type: "constellation_align",
+              shortName: "Rumbo de Bóreas",
+              brief: "Alinea la verga en la zona central (43%-57%) y fija el rumbo antes de que caiga la bruma.",
+              title: "✨ Rumbo de Bóreas (10s)",
+              desc: "Ajusta el ángulo de la verga hasta alinear la marca estelar con el Norte (45%-55%) antes de que caiga la bruma.",
+              timeLimit: 10
+            },
+            choices: [
+              {
+                id: "A",
+                isCanonical: false,
+                text: "Zarpar de noche en secreto sin recoger los animales negros para el sacrificio que Circe preparó junto a la nave.",
+                outcome: "Al llegar al límite del Océano, careces de víctimas para invocar a los muertos.",
+                philology: "Circe depositó junto al barco un carnero y una oveja negra indispensables para el rito."
+              },
+              {
+                id: "B",
+                isCanonical: false,
+                text: "Ignorar el consejo de viajar al Hades y poner rumbo directo al sur bordeando el Peloponeso.",
+                outcome: "Sin las profecías de Tiresias sobre las vacas del Sol, la tripulación navega a ciegas hacia su perdición.",
+                philology: "El descenso al Inframundo es el eje estructural central del poema."
+              },
+              {
+                id: "C",
+                isCanonical: true,
+                text: "Embarcar el carnero y la oveja negra proporcionados por Circe, izar las velas y dejar que el viento Bóreas guíe el navío hasta el confín del profundo Océano.",
+                outcome: "Durante todo el día la nave surca el mar con las velas hinchadas hasta alcanzar la tierra brumosa de los cimerios.",
+                philology: "Fiel al Canto XI (vv. 1-19): la obediencia ritual abre las puertas del mundo subterráneo."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        id: "underworld",
+        number: "III",
+        canto: "Canto XI · La Nekyia (El Inframundo)",
+        theme: "underworld",
+        title: "El Oráculo en el Hades",
+        excerpt: "3 momentos: La triple libación, la guardia con la espada y la memoria de la profecía.",
+        illustration: ILLUSTRATIONS.underworld,
+        moments: [
+          {
+            title: "Momento 1: El Foso de las Libaciones",
+            subtitle: "Donde confluyen el Piriflegetonte y el Cocito, cavas un foso de un codo por lado.",
+            lines: [
+              "En la ribera desolada de Perséfone, rodeada de álamos negros y sauces estériles, debes cumplir exactamente el ritual.",
+              "Las tres libaciones han de verterse sin error antes de degollar las reses negras."
+            ],
+            game: {
+              type: "ritual_timed",
+              shortName: "Triple Libación",
+              brief: "Vierte en orden exacto contra el reloj: 1º Aguamiel, 2º Vino dulce y 3º Agua pura.",
+              title: "🏺 Triple Libación (10s)",
+              desc: "Vierte las ofrendas en orden exacto contra el reloj: 1º Aguamiel, 2º Vino dulce, 3º Agua pura.",
+              timeLimit: 10
+            },
+            choices: [
+              {
+                id: "A",
+                isCanonical: true,
+                text: "Verter primero aguamiel, luego vino dulce y finalmente agua pura espolvoreando harina blanca, prometiendo sacrificar en Ítaca una vaca estéril y un carnero negro a Tiresias.",
+                outcome: "Atraídas por el aroma de la ofrenda y la sangre oscura, miles de almas exangües emergen desde el Érebo.",
+                philology: "Fiel al Canto XI (vv. 25-37): la precisión ritual es clave en la religión homérica."
+              },
+              {
+                id: "B",
+                isCanonical: false,
+                text: "Encender una gran pira sobre el foso para quemar por completo las ofrendas antes de que lleguen los espectros.",
+                outcome: "El humo dispersa las sombras y impide que Tiresias pueda beber la sangre necesaria para hablar.",
+                philology: "En la Nekyia, las sombras recobran la voz únicamente al beber la sangre del foso."
+              },
+              {
+                id: "C",
+                isCanonical: false,
+                text: "Llamar a gritos únicamente el nombre de Tiresias prohibiendo que cualquier otra alma cruce el río.",
+                outcome: "Los muertos no obedecen órdenes verbales sin el filo del bronce que custodie la sangre.",
+                philology: "Las almas carecen de entendimiento hasta probar la libación sangrienta."
+              }
+            ]
+          },
+          {
+            title: "Momento 2: La Guardia con la Espada de Bronce",
+            subtitle: "Multitudes de espectros se abalanzan sobre el foso, incluida la sombra de tu madre Anticlea.",
+            lines: [
+              "Guerreros con armaduras ensangrentadas y ancianos gimen alrededor del foso intentando beber antes de tiempo.",
+              "Incluso aparece tu madre Anticlea, a quien dejaste viva al partir hacia Troya."
+            ],
+            game: {
+              type: "ward_ghosts",
+              shortName: "Umbral de Sombras",
+              brief: "Pulsa sobre las sombras resaltadas para contener al menos 5 espectros antes de que acabe el tiempo.",
+              title: "🗡️ Umbral de Sombras (11s)",
+              desc: "Haz clic sobre los espectros que se iluminan antes de que alcancen el foso (detén al menos 5 sombras).",
+              timeLimit: 11
+            },
+            choices: [
+              {
+                id: "A",
+                isCanonical: false,
+                text: "Permitir que tu madre Anticlea beba primero para saber si Penélope sigue fiel en Ítaca.",
+                outcome: "Al bajar la guardia por dolor filial, las demás almas invaden el foso y Tiresias se retira sin dar el oráculo.",
+                philology: "Homero subraya el dolor de Odiseo al contener sus lágrimas y apartar a su madre hasta oír al profeta."
+              },
+              {
+                id: "B",
+                isCanonical: false,
+                text: "Clavar la espada en tierra y retroceder hacia la nave dejando que los espectros beban por turnos.",
+                outcome: "Sin orden ritual, los espectros consumen toda la sangre antes de que llegue el adivino tebano.",
+                philology: "La vigilancia personal de Odiseo junto al foso es insustituible."
+              },
+              {
+                id: "C",
+                isCanonical: true,
+                text: "Mantener la espada desenvainada sobre la sangre impidiendo que nadie —ni siquiera tu propia madre— se acerque antes de que beba el adivino Tiresias.",
+                outcome: "Tiresias avanza con su cetro de oro, bebe de la sangre oscura y se dispone a revelarte tu destino.",
+                philology: "Fiel al Canto XI (vv. 84-99): el autodominio heroico prevalece sobre el impulso afectivo."
+              }
+            ]
+          },
+          {
+            title: "Momento 3: Las Palabras del Adivino Tiresias",
+            subtitle: "El profeta ciego te advierte sobre la ira de Poseidón y las vacas del Sol.",
+            lines: [
+              "Tiresias anuncia que Poseidón te guarda rencor por cegar a Polifemo, pero aún podréis llegar a Ítaca si domináis vuestro ánimo.",
+              "Graba en tu memoria los signos sagrados de su profecía antes de abandonar las sombras."
+            ],
+            game: {
+              type: "rune_memory",
+              shortName: "Memoria de Tiresias",
+              brief: "Observa los 4 símbolos de la profecía y repítelos en el mismo orden antes de que expire el tiempo.",
+              title: "📜 Memoria de Tiresias (12s)",
+              desc: "Observa la secuencia de 4 símbolos griegos y repítela en el mismo orden antes de que expire el tiempo.",
+              timeLimit: 12
+            },
+            choices: [
+              {
+                id: "A",
+                isCanonical: false,
+                text: "Recordar que debéis sacrificar los bueyes más gordos de la isla de Trinacia para aplacar al dios Helios.",
+                outcome: "Ese error fatal condenaría a toda la tripulación a perecer bajo el rayo de Zeus.",
+                philology: "Tiresias prohíbe terminantemente tocar el ganado del Sol."
+              },
+              {
+                id: "B",
+                isCanonical: true,
+                text: "Grabar en tu corazón que en la isla de Trinacia debéis dejar intactas las vacas y ovejas del Sol, y que tras vencer a los pretendientes deberás viajar tierra adentro con un remo.",
+                outcome: "Con la profecía clara en tu mente, conversas brevemente con tu madre y regresas a la nave para zarpar del Océano.",
+                philology: "Fiel al Canto XI (vv. 104-137): incluye tanto la advertencia de Trinacia como el viaje final con el remo."
+              },
+              {
+                id: "C",
+                isCanonical: false,
+                text: "Interpretar que debes abandonar tu nave en el Hades y regresar por tierra cruzando Tracia.",
+                outcome: "Un desvío imposible que te alejaría para siempre del mar Jónico e Ítaca.",
+                philology: "El regreso debía efectuarse por mar pasando por Eea, las Sirenas y Trinacia."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        id: "sirens",
+        number: "IV",
+        canto: "Canto XII · Los Escollos de las Sirenas",
+        theme: "sirens",
+        title: "El Canto de las Sirenas",
+        excerpt: "3 momentos: Amasar la cera de abeja, asegurar las amarras al mástil y resistir el canto.",
+        illustration: ILLUSTRATIONS.sirens,
+        moments: [
+          {
+            title: "Momento 1: La Cera de Abeja bajo el Sol",
+            subtitle: "El viento cesa repentinamente frente a la isla florida rodeada de huesos.",
+            lines: [
+              "Las velas caen flácidas y los marineros empuñan los remos. A lo lejos se divisa la pradera donde aguardan las Sirenas.",
+              "Cortas un gran pan de cera con tu bronce y debes ablandarlo rápidamente con tus manos."
+            ],
+            game: {
+              type: "knead_wax",
+              shortName: "Cera de Abeja",
+              brief: "Alterna Mano Izquierda y Mano Derecha para ablandar y sellar los oídos a tiempo.",
+              title: "🕯️ Cera de Abeja (10s)",
+              desc: "Pulsa alternando 'Mano Izquierda' y 'Mano Derecha' para ablandar la cera y sellar los oídos de la tripulación.",
+              timeLimit: 10
+            },
+            choices: [
+              {
+                id: "A",
+                isCanonical: true,
+                text: "Sellar firmemente con cera blanda los oídos de todos tus remeros, pero dejar tus propios oídos descubiertos para escuchar el canto atado al mástil.",
+                outcome: "La tripulación queda inmunizada contra el hechizo sonoro mientras tú te preparas para oír lo que ningún mortal sobrevivió para contar.",
+                philology: "Fiel al Canto XII (vv. 173-179): solo Odiseo escucha la melodía."
+              },
+              {
+                id: "B",
+                isCanonical: false,
+                text: "Sellar también tus propios oídos y encargar al timonel que mire hacia la costa para guiarse.",
+                outcome: "Al renunciar a oír el canto, incumples el plan trazado junto a Circe.",
+                philology: "El deseo de conocimiento sin perdición define al héroe homérico."
+              },
+              {
+                id: "C",
+                isCanonical: false,
+                text: "Repartir la cera solo entre los remeros de proa para que los de popa puedan oír tus órdenes de mando.",
+                outcome: "Los marineros sin cera sueltan los remos al instante en que llega la primera nota.",
+                philology: "Todos los tripulantes tuvieron los oídos sellados y se comunicaron por señas."
+              }
+            ]
+          },
+          {
+            title: "Momento 2: Los Nudos en el Mástil",
+            subtitle: "Perímedes y Euríloco toman las cuerdas más gruesas de la nave.",
+            lines: [
+              "De pie junto al mástil central, extiendes los brazos para que tus compañeros te aten de pies y manos.",
+              "Los cabos deben quedar firmes antes de que la proa entre en el radio de la voz divina."
+            ],
+            game: {
+              type: "knots_timed",
+              shortName: "Amarre al Mástil",
+              brief: "Ajusta la tensión entre 78% y 94% y pulsa 'Fijar Nudo' antes de que se agote el tiempo.",
+              title: "🪢 Amarre al Mástil (10s)",
+              desc: "Ajusta la cuerda hasta la franja verde (78%-94%) y fíjala antes de que expire el cronómetro.",
+              timeLimit: 10
+            },
+            choices: [
+              {
+                id: "A",
+                isCanonical: false,
+                text: "Pedir que te aten con un nudo corredizo sencillo para poder liberarte en cuanto paséis la primera roca.",
+                outcome: "Al escuchar la primera estrofa, te desatas tú mismo y saltas hacia los arrecifes.",
+                philology: "La precompromiso exige que el agente no pueda deshacer sus propias ataduras durante la tentación."
+              },
+              {
+                id: "B",
+                isCanonical: true,
+                text: "Ordenar a Perímedes y Euríloco que, si les ruegas o haces señas para que te desaten, te sujeten con todavía más cuerdas.",
+                outcome: "Tus compañeros asienten en silencio y añaden doble vuelta a los cabos sobre el mástil.",
+                philology: "Fiel al Canto XII (vv. 160-164): estrategia clásica de racionalidad vinculante."
+              },
+              {
+                id: "C",
+                isCanonical: false,
+                text: "Atarte tú mismo al timón para poder corregir el rumbo mientras escuchas la melodía.",
+                outcome: "Con las manos atadas al timón, tus movimientos convulsos desvían la nave hacia los escollos.",
+                philology: "Odiseo permaneció inmóvil en la base del mástil mientras otros gobernaban la nave."
+              }
+            ]
+          },
+          {
+            title: "Momento 3: La Promesa de Sabiduría Absoluta",
+            subtitle: "Las Sirenas te llaman por tu nombre y prometen revelarte todo cuanto ocurre en la tierra.",
+            lines: [
+              "Su canto cristalino atraviesa el aire prometiendo gloria y omnisciencia a quien detenga su negra nave.",
+              "Tu corazón desea soltarse y frunces las cejas ordenando a tus hombres que te liberen."
+            ],
+            game: {
+              type: "resist_pull",
+              shortName: "Resistencia al Canto",
+              brief: "Pulsa 'Mantener la Lucidez' para evitar que el marcador alcance la zona roja antes del final.",
+              title: "🌊 Resistencia al Canto (10s)",
+              desc: "La melodía arrastra tu mente hacia el borde rojo. Pulsa repetidamente 'Mantener Calma' hasta que pase el escollo.",
+              timeLimit: 10
+            },
+            choices: [
+              {
+                id: "A",
+                isCanonical: false,
+                text: "Gritarles a las Sirenas que canten más alto porque el ruido de los remos te impide oír el final.",
+                outcome: "Tus gritos rompen la concentración de los remeros, que pierden el ritmo de bogada.",
+                philology: "Los remeros llevaban los oídos tapados y observaban únicamente las señas visuales."
+              },
+              {
+                id: "B",
+                isCanonical: false,
+                text: "Intentar romper el mástil empujando con los hombros para acercarte a la playa florida.",
+                outcome: "La madera de abeto resiste, pero las rozaduras te hieren sin lograr tu propósito.",
+                philology: "La fuerza de los nudos hechos por sus compañeros frustró cada intento de escape."
+              },
+              {
+                id: "C",
+                isCanonical: true,
+                text: "Aceptar que Perímedes y Euríloco se levanten para apretar aún más tus ligaduras mientras los demás siguen remando sin detenerse hasta perder de vista la isla.",
+                outcome: "Cuando el canto se apaga en la distancia, tus compañeros se quitan la cera de los oídos y te desatan sano y salvo.",
+                philology: "Fiel al Canto XII (vv. 192-200): el pacto previo salva la vida del héroe."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        id: "scylla",
+        number: "V",
+        canto: "Canto XII · El Estrecho Mortal",
+        theme: "scylla",
+        title: "Entre Escila y Caribdis",
+        excerpt: "3 momentos: Timón contra la vorágine, cadencia de remos y escudo frente a Escila.",
+        illustration: ILLUSTRATIONS.scylla,
+        moments: [
+          {
+            title: "Momento 1: La Nube de Vapor y el Remolino",
+            subtitle: "El estruendo de Caribdis espanta a los marineros, que sueltan los remos.",
+            lines: [
+              "Al ver el agua hervir y alzarse como humo sobre los escollos, el terror paraliza a la tripulación.",
+              "Recorres la cubierta animando a cada hombre y tomas el control del rumbo en el angosto canal."
+            ],
+            game: {
+              type: "helm_storm",
+              shortName: "Timón en el Remolino",
+              brief: "Compensa la succión de Caribdis con Babor/Estribor para mantenerte cerca de la franja segura.",
+              title: "⎈ Timón en el Remolino (11s)",
+              desc: "Compensa la fuerte succión de Caribdis manteniendo el barco en la ruta segura (24%-48%) durante 5 golpes de ola.",
+              timeLimit: 11
+            },
+            choices: [
+              {
+                id: "A",
+                isCanonical: true,
+                text: "Ordenar al timonel mantener la nave pegada al acantilado de Escila sin revelar a los remeros la existencia del monstruo para que no abandonen los remos por pánico.",
+                outcome: "Confiados en tus palabras de aliento, los marineros vuelven a bogar con vigor pegados a la roca.",
+                philology: "Fiel al Canto XII (vv. 219-225): silencio estratégico del líder para evitar la parálisis colectiva."
+              },
+              {
+                id: "B",
+                isCanonical: false,
+                text: "Navegar por el borde exterior de Caribdis aprovechando la fuerza centrífuga del remolino para ganar velocidad.",
+                outcome: "La vorágine absorbe el agua hasta el fondo arenoso y arrastra la quilla hacia el abismo.",
+                philology: "Circe advirtió que ni siquiera Poseidón podría salvar una nave atrapada por Caribdis."
+              },
+              {
+                id: "C",
+                isCanonical: false,
+                text: "Anclar en la entrada del estrecho hasta que la marea baje y se calme el remolino.",
+                outcome: "El estrecho carece de fondo para anclar y Caribdis sorbe el agua tres veces cada día.",
+                philology: "Cruzar con rapidez era la única alternativa posible."
+              }
+            ]
+          },
+          {
+            title: "Momento 2: La Cadencia de los Remos en el Paso",
+            subtitle: "Caribdis comienza a sorber el agua salada dejando al descubierto la roca negra.",
+            lines: [
+              "Todos miran hipnotizados hacia la vorágine de Caribdis mientras la nave avanza junto al acantilado opuesto.",
+              "Cada segundo cuenta para cruzar el tramo más estrecho antes de que el remolino vuelva a vomitar el mar."
+            ],
+            game: {
+              type: "row_cadence",
+              shortName: "Cadencia de Remos",
+              brief: "Pulsa '¡Bogar con Fuerza!' de forma continua para llenar la barra antes de que caiga.",
+              title: "🚣 Cadencia de Remos (10s)",
+              desc: "Pulsa '¡Remar!' al ritmo rápido para llenar la barra de impulso antes de la siguiente succión.",
+              timeLimit: 10
+            },
+            choices: [
+              {
+                id: "A",
+                isCanonical: false,
+                text: "Ordenar a la mitad de los remeros que suelten los remos y tomen lanzas para vigilar las cuevas superiores.",
+                outcome: "Al perder la mitad de la potencia de boga, la corriente lateral empuja el casco hacia Caribdis.",
+                philology: "La velocidad constante de todos los remos era vital para no quedar a merced del vórtice."
+              },
+              {
+                id: "B",
+                isCanonical: false,
+                text: "Virar bruscamente hacia el centro del canal en cuanto veas caer una sombra desde lo alto.",
+                outcome: "Un viraje brusco expone el costado del barco a la succión del remolino.",
+                philology: "Mantener el rumbo firme junto al escollo evitaba la pérdida total de la nave."
+              },
+              {
+                id: "C",
+                isCanonical: true,
+                text: "Mantener la máxima cadencia de remos mirando al frente mientras empuñas tus dos lanzas en la proa, asumiendo el trágico sacrificio de seis hombres antes que perder toda la nave.",
+                outcome: "Escila desciende como un rayo y arrebata a seis compañeros de cubierta; mientras gritan tu nombre, la nave escapa del estrecho.",
+                philology: "Fiel al Canto XII (vv. 244-259): elección trágica entre perder seis hombres o perder toda la tripulación."
+              }
+            ]
+          },
+          {
+            title: "Momento 3: Escapar del Estrecho hacia Trinacia",
+            subtitle: "Con el corazón desgarrado por tus seis compañeros, dejas atrás los escollos.",
+            lines: [
+              "Jamás tus ojos vieron espectáculo más lamentable en todo cuanto sufriste explorando los caminos del mar.",
+              "A lo lejos aparece la hermosa isla de Trinacia, donde pacen los rebaños sagrados del Sol."
+            ],
+            game: {
+              type: "shield_brace",
+              shortName: "Escudos de Cubierta",
+              brief: "Pulsa los 4 escudos en orden numérico ascendente (1 → 2 → 3 → 4) antes de que acabe el tiempo.",
+              title: "🛡️ Escudos de Cubierta (9s)",
+              desc: "Pulsa los 4 escudos en orden numérico (1 → 2 → 3 → 4) para proteger a los remeros de las olas de resaca.",
+              timeLimit: 9
+            },
+            choices: [
+              {
+                id: "A",
+                isCanonical: true,
+                text: "Advertir de inmediato a los supervivientes sobre la profecía de Tiresias y Circe para intentar pasar de largo frente a la isla del Sol sin desembarcar.",
+                outcome: "Aunque el cansancio de los hombres les hará pedir descanso en la costa, tú les exiges jurar que jamás tocarán el ganado sagrado.",
+                philology: "Fiel al Canto XII (vv. 264-302): Odiseo intenta evitar Trinacia y, al verse obligado a atracar, impone el juramento."
+              },
+              {
+                id: "B",
+                isCanonical: false,
+                text: "Desembarcar de inmediato en Trinacia y celebrar un banquete fúnebre sacrificando reses de la isla en honor a los seis caídos.",
+                outcome: "Sacrificar las vacas de Helios desencadena la cólera inmediata del dios y de Zeus.",
+                philology: "El sacrilegio contra Helios ocurre más tarde por desobediencia de Euríloco cuando Odiseo dormía."
+              },
+              {
+                id: "C",
+                isCanonical: false,
+                text: "Regresar al estrecho al anochecer para rescatar los cuerpos de tus seis compañeros.",
+                outcome: "Volver al canal sería una sentencia de muerte segura frente a ambos monstruos.",
+                philology: "Homero indica que huyeron velozmente lejos de las rocas de Escila y Caribdis."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        id: "ithaca",
+        number: "VI",
+        canto: "Cantos XXI–XXII · El Salón de Ítaca",
+        theme: "ithaca",
+        title: "La Prueba del Arco en Ítaca",
+        excerpt: "3 momentos: Contener la ira bajo el disfraz, encordar el arco y atravesar las doce hachas.",
+        illustration: ILLUSTRATIONS.ithaca,
+        moments: [
+          {
+            title: "Momento 1: Las Burlas de los Pretendientes",
+            subtitle: "Disfrazado de anciano mendigo en tu propio salón, soportas insultos y golpes.",
+            lines: [
+              "Antínoo y Eurímaco se burlan de tus harapos mientras devoran tus bueyes y beben tu vino.",
+              "Penélope anuncia que se casará con quien logre tensar el gran arco de Odiseo y atravesar doce hachas."
+            ],
+            game: {
+              type: "calm_meter",
+              shortName: "Freno del Mendigo",
+              brief: "Pulsa 'Templar el Corazón' para mantener tu ira bajo control antes de que expire el tiempo.",
+              title: "🧘 Freno del Mendigo (10s)",
+              desc: "Las provocaciones disparan tu ira hacia la derecha. Pulsa 'Templar Ánimo' para mantenerla en la zona serena.",
+              timeLimit: 10
+            },
+            choices: [
+              {
+                id: "A",
+                isCanonical: false,
+                text: "Responder a Antínoo retándolo a un combate a puñetazos en medio del banquete para demostrar tu fuerza.",
+                outcome: "Un enfrentamiento prematuro haría que todos los pretendientes se unieran contra ti antes de tener el arco.",
+                philology: "Odiseo ya había peleado con el mendigo Iro, pero evitó enfrentarse desarmado a los nobles."
+              },
+              {
+                id: "B",
+                isCanonical: true,
+                text: "Soportar en silencio las afrentas mientras indicas con una seña a Telémaco, Eumeo y Filetio que cierren las puertas del salón y retiren las armas de los muros.",
+                outcome: "Cuando los pretendientes fracasan uno tras otro al intentar doblar el arco, pides con humildad probar tus manos.",
+                philology: "Fiel al Canto XXI (vv. 230-284): la preparación táctica del salón asegura la trampa."
+              },
+              {
+                id: "C",
+                isCanonical: false,
+                text: "Revelar tu identidad a Penélope en voz baja antes del certamen para que ella te entregue el arco directamente.",
+                outcome: "Los pretendientes sospechan del trato preferente e impiden que toques el arma.",
+                philology: "Penélope no reconoce plenamente a Odiseo hasta después de la matanza y la prueba del lecho."
+              }
+            ]
+          },
+          {
+            title: "Momento 2: Encordar el Gran Arco de Éurito",
+            subtitle: "Sostienes el arco en tus manos examinándolo por todas partes por si la carcoma lo dañó.",
+            lines: [
+              "Los pretendientes se burlan creyendo que eres un experto coleccionista de arcos.",
+              "Sin esfuerzo alguno, como un hábil cantor tiende una cuerda nueva en su lira, doblas la madera y encajas la cuerda."
+            ],
+            game: {
+              type: "bow_string",
+              shortName: "Tensión del Arco",
+              brief: "Dobla el arco hasta la marca dorada (82%-96%) y pulsa 'Enganchar Cuerda' a tiempo.",
+              title: "🏹 Tensión del Arco (9s)",
+              desc: "Pulsa para llevar la tensión del arco exactamente hasta la marca dorada (82%-96%) antes de que acabe el tiempo.",
+              timeLimit: 9
+            },
+            choices: [
+              {
+                id: "A",
+                isCanonical: true,
+                text: "Pulsar la cuerda con la diestra para probar su sonido —que vibra como el canto de una golondrina— mientras Zeus hace retumbar un trueno propicio en el cielo.",
+                outcome: "El color muda en el rostro de todos los pretendientes y un silencio sepulcral cae sobre el mégaron.",
+                philology: "Fiel al Canto XXI (vv. 404-415): el símil del aedo afinando su lira precede al disparo."
+              },
+              {
+                id: "B",
+                isCanonical: false,
+                text: "Entregar el arco ya encordado a Telémaco para que sea él quien realice el disparo frente a su madre.",
+                outcome: "Telémaco estuvo a punto de lograrlo antes, pero una seña de su padre le indicó cederle el honor.",
+                philology: "En el Canto XXI, Telémaco deja el arco a una señal de Odiseo para que el rey reclame su trono."
+              },
+              {
+                id: "C",
+                isCanonical: false,
+                text: "Exigir primero que todos los pretendientes abandonen el palacio antes de tomar una sola flecha del carcaj.",
+                outcome: "Los ciento ocho nobles se niegan a marcharse sin ver el disparo.",
+                philology: "El disparo a través de las hachas era la condición pública pactada con Penélope."
+              }
+            ]
+          },
+          {
+            title: "Momento 3: La Flecha a través de las Doce Hachas",
+            subtitle: "Sentado aún en tu taburete, ajustas la flecha al nervio y apuntas hacia el primer anillo.",
+            lines: [
+              "Las doce hachas están alineadas en un surco recto como las cuadernas de un navío.",
+              "Tiras de la muesca y de los nervios de buey fijando la vista en el blanco."
+            ],
+            game: {
+              type: "axe_shot",
+              shortName: "Tiro de las Doce Hachas",
+              brief: "Pulsa '¡Soltar Flecha!' cuando el pulso cruce el centro exacto (44%-56%) antes de que acabe el tiempo.",
+              title: "🎯 Tiro de las Doce Hachas (9s)",
+              desc: "Pulsa 'Soltar Flecha' justo cuando el pulso cruce el centro exacto (44%-56%) antes de que expire el cronómetro.",
+              timeLimit: 9
+            },
+            choices: [
+              {
+                id: "A",
+                isCanonical: false,
+                text: "Disparar al techo del salón tras atravesar las hachas para advertir a los pretendientes que huyan por las puertas traseras.",
+                outcome: "Los pretendientes aprovechan la tregua para reorganizarse y buscar refuerzos en la ciudad.",
+                philology: "Las puertas habían sido trancadas expresamente por Filetio y Eumeo para impedir su huida."
+              },
+              {
+                id: "B",
+                isCanonical: false,
+                text: "Permanecer sentado esperando que Penélope te proclame vencedor del certamen.",
+                outcome: "Antínoo ordena a los suyos rodear tu asiento antes de que puedas ponerte en pie.",
+                philology: "La rapidez de acción tras el disparo fue decisiva."
+              },
+              {
+                id: "C",
+                isCanonical: true,
+                text: "Tras atravesar limpia la flecha los anillos de todas las hachas, despojarte de tus harapos, saltar sobre el gran umbral con el carcaj lleno y apuntar tu segunda flecha contra Antínoo.",
+                outcome: "Recuperas el control absoluto del umbral y de tu reino: la larga odisea de veinte años culmina en justicia y reencuentro.",
+                philology: "Fiel al Canto XXII (vv. 1-16): el salto al umbral marca el inicio del desenlace épico en Ítaca."
+              }
+            ]
+          }
+        ]
+      }
+    ];
+
+    /* ==========================================================================
+       4. GESTIÓN DE ESTADO Y PERSISTENCIA POR CAPÍTULO EN SESSIONSTORAGE
+       ========================================================================== */
+    const STORAGE_KEY = "odisea_18scenes_session_v3";
+
+    function loadSessionState() {
+      try {
+        const raw = sessionStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && typeof parsed.completed === "object") return parsed;
+        }
+      } catch (e) {}
+      return { completed: {} };
+    }
+
+    function saveSessionState(obj) {
+      try {
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
+      } catch (e) {}
+    }
+
+    const sessionData = loadSessionState();
+
+    const appState = {
+      view: "hub", // 'hub' | 'moment' | 'moment_feedback' | 'chapter_summary'
+      chapterIndex: 0,
+      momentIndex: 0,
+      momentRecords: [], // [{ gamePts, choicePts, isCanonical }]
+      currentGameScore: 0,
+      currentGameDone: false,
+      activeIntervals: [],
+      lineTimers: []
+    };
+
+    const appStage = document.getElementById("appStage");
+    const totalScoreHud = document.getElementById("totalScoreHud");
+    const btnAudioToggle = document.getElementById("btnAudioToggle");
+    const audioIcon = document.getElementById("audioIcon");
+    const audioLabel = document.getElementById("audioLabel");
+    const musicModeSelect = document.getElementById("musicModeSelect");
+    const btnDownloadHtml = document.getElementById("btnDownloadHtml");
+    const btnMenuHub = document.getElementById("btnMenuHub");
+    const btnHomeBrand = document.getElementById("btnHomeBrand");
+    const toastNotice = document.getElementById("toastNotice");
+
+    function showToast(msg) {
+      toastNotice.textContent = msg;
+      toastNotice.classList.add("show");
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => toastNotice.classList.remove("show"), 3200);
+    }
+
+    function getTotalSessionScore() {
+      return Object.values(sessionData.completed).reduce((acc, item) => acc + (item.total || 0), 0);
+    }
+
+    function updateGlobalHUD(themeName = "default") {
+      document.body.setAttribute("data-theme", themeName);
+      audio.setScene(themeName);
+      totalScoreHud.textContent = `${getTotalSessionScore()} / 1800`;
+    }
+
+    function clearAllTimers() {
+      appState.lineTimers.forEach((id) => clearTimeout(id));
+      appState.lineTimers = [];
+      appState.activeIntervals.forEach((id) => clearInterval(id));
+      appState.activeIntervals = [];
+    }
+
+    function animateLines() {
+      const lines = Array.from(document.querySelectorAll(".narrative-line"));
+      const skipBtn = document.getElementById("btnSkipLines");
+
+      const revealAll = () => {
+        appState.lineTimers.forEach((id) => clearTimeout(id));
+        appState.lineTimers = [];
+        lines.forEach((l) => l.classList.add("visible"));
+        if (skipBtn) skipBtn.classList.add("hidden");
+      };
+
+      if (skipBtn) {
+        skipBtn.classList.remove("hidden");
+        skipBtn.onclick = () => {
+          audio.playClick();
+          revealAll();
+        };
+      }
+
+      lines.forEach((line, idx) => {
+        const t = setTimeout(() => {
+          line.classList.add("visible");
+          if (idx === lines.length - 1 && skipBtn) skipBtn.classList.add("hidden");
+        }, 180 + idx * 550);
+        appState.lineTimers.push(t);
+      });
+    }
+
+    /* ==========================================================================
+       5. VISTA PRINCIPAL: MAPA DE LA TRAVESÍA (SELECTOR DE 6 CAPÍTULOS)
+       ========================================================================== */
+    function renderHub() {
+      clearAllTimers();
+      appState.view = "hub";
+      updateGlobalHUD("default");
+
+      const completedCount = Object.keys(sessionData.completed).length;
+      const totalScore = getTotalSessionScore();
+
+      const cardsHtml = CHAPTERS.map((ch, idx) => {
+        const record = sessionData.completed[ch.id];
+        const isDone = Boolean(record);
+        return `
+          <button type="button" class="chapter-tile" data-chapter-idx="${idx}">
+            <div class="tile-thumb">
+              <span class="tile-canto-tag">Cap. ${ch.number} · ${ch.canto.split("·")[0].trim()}</span>
+              <span class="tile-status-badge ${isDone ? "status-done" : "status-pending"}">
+                ${isDone ? `✓ ${record.total}/300 pts` : "3 Momentos"}
+              </span>
+              ${ch.illustration}
+            </div>
+            <div class="tile-body">
+              <div>
+                <h2 class="tile-title">${ch.title}</h2>
+                <div class="tile-mechanic">⚔️ 3 Minijuegos Cronometrados + 3 Decisiones</div>
+                <p class="tile-excerpt" style="margin-top: 6px;">${ch.excerpt}</p>
+              </div>
+              <div class="tile-footer">
+                <span>${isDone ? "Repetir capítulo" : "Explorar capítulo"}</span>
+                <span>➔</span>
+              </div>
+            </div>
+          </button>
+        `;
+      }).join("");
+
+      appStage.innerHTML = `
+        <section class="monument-card">
+          <div class="hub-hero">
+            <span class="hub-kicker">Homero · Poema Épico · 6 Cantos × 3 Escenas</span>
+            <h1 class="hub-title">Mapa de la Travesía de Ulises</h1>
+            <p class="hub-desc">
+              Cada capítulo se despliega en <strong>3 momentos secuenciales</strong> con ambientación musical propia, minijuegos cronometrados de alta exigencia y tres decisiones literarias sin pistas previas para poner a prueba tu dominio de la Odisea.
+            </p>
+
+            <div class="session-summary-strip">
+              <div class="stat-box">
+                <span>Cantos Completados</span>
+                <strong>${completedCount} / 6</strong>
+              </div>
+              <div class="stat-box">
+                <span>Astucia Total (Sesión)</span>
+                <strong>${totalScore} / 1800</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="chapters-grid">
+            ${cardsHtml}
+          </div>
+
+          <div style="padding: 0 24px 26px; display: flex; justify-content: flex-end;">
+            <button type="button" id="btnResetSession" class="btn-util">
+              <span>🔄</span>
+              <span>Reiniciar puntajes de sesión</span>
+            </button>
+          </div>
+        </section>
+      `;
+
+      document.querySelectorAll(".chapter-tile").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          audio.init();
+          audio.playClick();
+          const idx = Number(btn.getAttribute("data-chapter-idx"));
+          startChapter(idx);
+        });
+      });
+
+      document.getElementById("btnResetSession").addEventListener("click", () => {
+        audio.playClick();
+        sessionData.completed = {};
+        saveSessionState(sessionData);
+        showToast("Puntajes de sesión reiniciados.");
+        renderHub();
+      });
+    }
+
+    function startChapter(chapterIndex) {
+      appState.chapterIndex = chapterIndex;
+      appState.momentIndex = 0;
+      appState.momentRecords = [];
+      renderMoment();
+    }
+
+    /* ==========================================================================
+       6. VISTA DE MOMENTO: NARRACIÓN + MINIJUEGO CRONOMETRADO + 3 OPCIONES
+       ========================================================================== */
+    function renderMoment() {
+      clearAllTimers();
+      appState.view = "moment";
+      appState.currentGameScore = 0;
+      appState.currentGameDone = false;
+
+      const ch = CHAPTERS[appState.chapterIndex];
+      const mom = ch.moments[appState.momentIndex];
+      updateGlobalHUD(ch.theme);
+
+      const pillsHtml = [0, 1, 2]
+        .map((i) => {
+          const cls =
+            i < appState.momentIndex ? "moment-dot done" : i === appState.momentIndex ? "moment-dot active" : "moment-dot";
+          return `<span class="${cls}">Escena ${i + 1}/3</span>`;
+        })
+        .join("");
+
+      const linesHtml = mom.lines.map((l) => `<p class="narrative-line">${l}</p>`).join("");
+      const choicesHtml = mom.choices
+        .map(
+          (c) => `
+          <button type="button" class="choice-btn" data-choice-id="${c.id}">
+            <span class="choice-letter">${c.id}</span>
+            <span class="choice-text">${c.text}</span>
+          </button>
+        `
+        )
+        .join("");
+
+      appStage.innerHTML = `
+        <article class="monument-card">
+          <div class="scene-visual">
+            <span class="canto-badge">Cap. ${ch.number} · ${ch.canto}</span>
+            <div class="moment-pills">${pillsHtml}</div>
+            ${ch.illustration}
+          </div>
+
+          <div class="scene-body">
+            <h1 class="scene-title">${mom.title}</h1>
+            <p class="scene-subtitle">${mom.subtitle}</p>
+
+            <div class="narrative-box">${linesHtml}</div>
+            <div class="narrative-controls">
+              <button type="button" id="btnSkipLines" class="btn-skip">Mostrar texto completo ⏭</button>
+            </div>
+
+            <div class="challenge-panel">
+              <div class="challenge-header">
+                <h2 class="challenge-title">${mom.game.title}</h2>
+                <span class="timer-pill" id="gameTimerPill">⏱️ ${mom.game.timeLimit}.0s</span>
+              </div>
+              <p class="challenge-desc">${mom.game.desc}</p>
+              <div id="gamePlayArea"></div>
+            </div>
+
+            <div class="choices-section locked" id="choicesSection">
+              <div class="choices-heading">
+                <span>🧭</span>
+                <span>Supera o finaliza la prueba superior para elegir la decisión de Ulises:</span>
+              </div>
+              <div class="choices-grid">${choicesHtml}</div>
+            </div>
+          </div>
+        </article>
+      `;
+
+      animateLines();
+      renderPreGameLaunchPanel(mom.game);
+
+      document.querySelectorAll(".choice-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          if (!appState.currentGameDone) return;
+          const choiceId = btn.getAttribute("data-choice-id");
+          const chosen = mom.choices.find((c) => c.id === choiceId);
+          if (chosen) {
+            evaluateMomentChoice(ch, mom, chosen);
+          }
+        });
+      });
+    }
+
+    /* Renderiza el panel de preparación con el botón 'Iniciar [Nombre del Minijuego]' */
+    function renderPreGameLaunchPanel(game) {
+      const area = document.getElementById("gamePlayArea");
+      const pill = document.getElementById("gameTimerPill");
+      if (!area) return;
+
+      const gameLabel = game.shortName || game.title;
+      if (pill) {
+        pill.textContent = `⏸️ ${game.timeLimit}.0s listos`;
+      }
+
+      area.innerHTML = `
+        <div class="pregame-launch-box">
+          <div class="pregame-meta">
+            <span class="pregame-meta-tag">Preparación · ${game.timeLimit} segundos al iniciar</span>
+            <p class="pregame-brief">${game.brief || game.desc}</p>
+          </div>
+          <button type="button" id="btnStartMiniGame" class="btn-launch-minigame">
+            <span>▶</span>
+            <span>Iniciar ${gameLabel}</span>
+          </button>
+        </div>
+      `;
+
+      const launchBtn = document.getElementById("btnStartMiniGame");
+      if (launchBtn) {
+        launchBtn.addEventListener("click", () => {
+          if (appState.currentGameDone) return;
+          audio.playClick();
+          mountTimedMiniGame(game);
+        });
+      }
+    }
+
+    function finishMiniGame(points, msg, success = true) {
+      if (appState.currentGameDone) return;
+      appState.currentGameDone = true;
+      appState.currentGameScore = points;
+      clearAllTimers();
+
+      const pill = document.getElementById("gameTimerPill");
+      if (pill) {
+        pill.classList.add("done");
+        pill.textContent = `✓ +${points}/40 pts`;
+      }
+
+      const choicesSection = document.getElementById("choicesSection");
+      if (choicesSection) {
+        choicesSection.classList.remove("locked");
+        const heading = choicesSection.querySelector(".choices-heading span:last-child");
+        if (heading) heading.textContent = "Elige tu acción (solo una corresponde al texto original de Homero):";
+      }
+
+      if (success) {
+        audio.playTriumph();
+      } else {
+        audio.playDramatic();
+      }
+      showToast(msg);
+    }
+
+    function startCountdown(seconds, onTick, onExpire) {
+      let remaining = seconds * 10; // décimas de segundo
+      const pill = document.getElementById("gameTimerPill");
+      const interval = setInterval(() => {
+        if (appState.currentGameDone || appState.view !== "moment") {
+          clearInterval(interval);
+          return;
+        }
+        remaining--;
+        if (pill) {
+          pill.textContent = `⏱️ ${(remaining / 10).toFixed(1)}s`;
+        }
+        if (remaining % 10 === 0 && remaining <= 30 && remaining > 0) {
+          audio.playTick(true);
+        }
+        if (onTick) onTick(remaining / 10);
+        if (remaining <= 0) {
+          clearInterval(interval);
+          onExpire();
+        }
+      }, 100);
+      appState.activeIntervals.push(interval);
+    }
+
+    /* ==========================================================================
+       7. IMPLEMENTACIÓN DE LOS 18 MINIJUEGOS CON MAYOR DIFICULTAD Y TIEMPO
+       ========================================================================== */
+    function mountTimedMiniGame(game) {
+      const area = document.getElementById("gamePlayArea");
+      const type = game.type;
+
+      // 1.1 POLIFEMO: Fuego que cae rápido y requiere sostener >85%
+      if (type === "rapid_heat") {
+        let heat = 20;
+        let holdTicks = 0;
+        area.innerHTML = `
+          <div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:700;">
+            <span>Temperatura de la estaca (Meta: ≥85% sostenido):</span>
+            <span id="heatVal">20%</span>
+          </div>
+          <div class="gauge-track">
+            <div class="gauge-zone" style="left:85%; width:15%;"></div>
+            <div id="heatBar" style="height:100%; width:20%; background:linear-gradient(90deg,#f59e0b,#ef4444);"></div>
+          </div>
+          <button type="button" id="btnHeat" class="action-touch-btn">🔥 ¡Avivar Brasas Rápido!</button>
+        `;
+        const decay = setInterval(() => {
+          if (appState.currentGameDone) return clearInterval(decay);
+          // Decaimiento rápido para mayor exigencia
+          heat = Math.max(5, heat - 5.2);
+          if (heat >= 85) {
+            holdTicks++;
+            if (holdTicks >= 7) {
+              document.getElementById("btnHeat").disabled = true;
+              return finishMiniGame(40, "¡Estaca al rojo vivo templada a tiempo!", true);
+            }
+          } else {
+            holdTicks = 0;
+          }
+          const bar = document.getElementById("heatBar");
+          const val = document.getElementById("heatVal");
+          if (bar && val) {
+            bar.style.width = `${heat}%`;
+            val.textContent = `${Math.round(heat)}%`;
+          }
+        }, 120);
+        appState.activeIntervals.push(decay);
+
+        document.getElementById("btnHeat").addEventListener("click", () => {
+          if (appState.currentGameDone) return;
+          audio.playClick();
+          heat = Math.min(100, heat + 13);
+        });
+
+        startCountdown(game.timeLimit, null, () => {
+          const btn = document.getElementById("btnHeat");
+          if (btn) btn.disabled = true;
+          const pts = heat >= 65 ? 20 : 10;
+          finishMiniGame(pts, "¡Tiempo agotado! La punta apenas alcanzó brillo tenue.", false);
+        });
+      }
+
+      // 1.2 POLIFEMO: Sigilo bajo carneros evitando las manos del cíclope
+      else if (type === "stealth_sweep") {
+        let progress = 0;
+        let sweeping = false;
+        area.innerHTML = `
+          <div id="cyclopsStateBanner" style="padding:10px; border-radius:8px; text-align:center; font-weight:800; margin-bottom:10px; background:rgba(16,185,129,0.2); border:1px solid #34d399; color:#a7f3d0;">
+            ✋ MANOS EN ALTO — ¡AVANZA CON EL REBAÑO!
+          </div>
+          <div class="gauge-track">
+            <div id="stealthBar" style="height:100%; width:0%; background:#34d399;"></div>
+          </div>
+          <button type="button" id="btnStealthStep" class="action-touch-btn">🐑 Avanzar bajo el carnero (+14%)</button>
+        `;
+        const sweepLoop = setInterval(() => {
+          if (appState.currentGameDone) return clearInterval(sweepLoop);
+          sweeping = !sweeping;
+          const banner = document.getElementById("cyclopsStateBanner");
+          if (banner) {
+            if (sweeping) {
+              banner.style.background = "rgba(239,68,68,0.28)";
+              banner.style.borderColor = "#ef4444";
+              banner.style.color = "#fecaca";
+              banner.textContent = "👁️✋ ¡POLIFEMO PALPA EL REBAÑO! — ¡QUIETO!";
+            } else {
+              banner.style.background = "rgba(16,185,129,0.2)";
+              banner.style.borderColor = "#34d399";
+              banner.style.color = "#a7f3d0";
+              banner.textContent = "✋ MANOS EN ALTO — ¡AVANZA!";
+            }
+          }
+        }, 1450);
+        appState.activeIntervals.push(sweepLoop);
+
+        document.getElementById("btnStealthStep").addEventListener("click", () => {
+          if (appState.currentGameDone) return;
+          if (sweeping) {
+            audio.playDramatic();
+            progress = Math.max(0, progress - 20);
+            showToast("¡Te moviste mientras palpaba! Retrocedes.");
+          } else {
+            audio.playClick();
+            progress = Math.min(100, progress + 14);
+          }
+          document.getElementById("stealthBar").style.width = `${progress}%`;
+          if (progress >= 100) {
+            document.getElementById("btnStealthStep").disabled = true;
+            finishMiniGame(40, "¡Cruzaste el umbral oculto bajo el carnero!", true);
+          }
+        });
+
+        startCountdown(game.timeLimit, null, () => {
+          const btn = document.getElementById("btnStealthStep");
+          if (btn) btn.disabled = true;
+          finishMiniGame(progress >= 60 ? 20 : 10, "¡Amanecer tardío! Lograste salir con dificultad.", false);
+        });
+      }
+
+      // 1.3 POLIFEMO: Esquivar 5 peñascos
+      else if (type === "dodge_rocks") {
+        let shipLane = 1; // 0 = Izq, 1 = Centro, 2 = Der
+        let dangerLane = 0;
+        let dodged = 0;
+        const laneNames = ["Babor (Izq)", "Centro", "Estribor (Der)"];
+        area.innerHTML = `
+          <div style="display:flex; justify-content:space-between; font-size:0.86rem; font-weight:700; margin-bottom:8px;">
+            <span id="rockTargetTxt">⚠️ Roca cae en: ${laneNames[dangerLane]}</span>
+            <span id="dodgeCountTxt">Esquivadas: 0 / 5</span>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:12px;">
+            <div id="lane0" style="padding:12px; border-radius:8px; text-align:center; border:1px solid var(--border-ornate);">🪨</div>
+            <div id="lane1" style="padding:12px; border-radius:8px; text-align:center; border:2px solid var(--accent-bright); background:rgba(255,255,255,0.1);">⛵</div>
+            <div id="lane2" style="padding:12px; border-radius:8px; text-align:center; border:1px solid var(--border-ornate);">🌊</div>
+          </div>
+          <div style="display:flex; gap:10px; justify-content:center;">
+            <button type="button" id="btnRockLeft" class="action-touch-btn">⬅ Virar a Babor</button>
+            <button type="button" id="btnRockRight" class="action-touch-btn">Virar a Estribor ➡</button>
+          </div>
+        `;
+        const renderLanes = () => {
+          for (let i = 0; i < 3; i++) {
+            const el = document.getElementById(`lane${i}`);
+            if (!el) return;
+            el.textContent = i === shipLane ? "⛵" : i === dangerLane ? "🪨" : "🌊";
+            el.style.borderColor = i === shipLane ? "var(--accent-bright)" : i === dangerLane ? "#ef4444" : "var(--border-ornate)";
+          }
+        };
+        const rockLoop = setInterval(() => {
+          if (appState.currentGameDone) return clearInterval(rockLoop);
+          if (shipLane !== dangerLane) {
+            dodged++;
+            document.getElementById("dodgeCountTxt").textContent = `Esquivadas: ${dodged} / 5`;
+            if (dodged >= 5) {
+              document.getElementById("btnRockLeft").disabled = true;
+              document.getElementById("btnRockRight").disabled = true;
+              return finishMiniGame(40, "¡Esquivaste los cinco peñascos de Polifemo!", true);
+            }
+          } else {
+            audio.playDramatic();
+            showToast("¡Impacto cercano! La ola sacude la cubierta.");
+          }
+          dangerLane = (dangerLane + 1 + Math.floor(Math.random() * 2)) % 3;
+          document.getElementById("rockTargetTxt").textContent = `⚠️ Roca cae en: ${laneNames[dangerLane]}`;
+          renderLanes();
+        }, 1600);
+        appState.activeIntervals.push(rockLoop);
+
+        document.getElementById("btnRockLeft").addEventListener("click", () => {
+          if (appState.currentGameDone) return;
+          audio.playClick();
+          shipLane = Math.max(0, shipLane - 1);
+          renderLanes();
+        });
+        document.getElementById("btnRockRight").addEventListener("click", () => {
+          if (appState.currentGameDone) return;
+          audio.playClick();
+          shipLane = Math.min(2, shipLane + 1);
+          renderLanes();
+        });
+
+        startCountdown(game.timeLimit, null, () => {
+          finishMiniGame(dodged >= 3 ? 20 : 10, "¡Saliste de la bahía entre fuertes oleajes!", false);
+        });
+      }
+
+      // 2.1 CIRCE: Identificar el Moly contra reloj
+      else if (type === "herb_timed") {
+        const herbs = [
+          { id: "a", name: "Loto Dorado", desc: "Fruto dulce que borra el recuerdo del regreso.", ok: false },
+          { id: "b", name: "Moly Divino", desc: "Raíz negra profunda y flor blanca como la leche.", ok: true },
+          { id: "c", name: "Cicuta de Eea", desc: "Tallo hueco moteado de púrpura y flor amarilla.", ok: false },
+          { id: "d", name: "Asfódelo", desc: "Espiga grisácea de las praderas subterráneas.", ok: false }
+        ];
+        area.innerHTML = `<div class="herb-grid">${herbs
+          .map(
+            (h) =>
+              `<button type="button" class="herb-card" data-h="${h.id}"><strong style="display:block;color:var(--accent-bright);">${h.name}</strong><span style="font-size:0.82rem;">${h.desc}</span></button>`
+          )
+          .join("")}</div>`;
+        area.querySelectorAll(".herb-card").forEach((card) => {
+          card.addEventListener("click", () => {
+            if (appState.currentGameDone) return;
+            const item = herbs.find((x) => x.id === card.getAttribute("data-h"));
+            area.querySelectorAll(".herb-card").forEach((c) => (c.disabled = true));
+            if (item.ok) {
+              finishMiniGame(40, "¡Exacto! El moly protege tu mente contra Circe.", true);
+            } else {
+              finishMiniGame(10, "Planta errónea: el moly tiene raíz negra y flor blanca.", false);
+            }
+          });
+        });
+        startCountdown(game.timeLimit, null, () => {
+          area.querySelectorAll(".herb-card").forEach((c) => (c.disabled = true));
+          finishMiniGame(10, "¡Tiempo agotado antes de recoger la hierba!", false);
+        });
+      }
+
+      // 2.2 CIRCE: Reacción de espada en ventana móvil
+      else if (type === "sword_reflex") {
+        let pos = 5;
+        let dir = 1;
+        area.innerHTML = `
+          <div class="gauge-track">
+            <div class="gauge-zone" style="left:68%; width:18%;"></div>
+            <div class="gauge-marker" id="swordMarker" style="left:5%;"></div>
+          </div>
+          <button type="button" id="btnDrawSword" class="action-touch-btn">⚔️ ¡Desenvainar Espada Ahora!</button>
+        `;
+        const loop = setInterval(() => {
+          if (appState.currentGameDone) return clearInterval(loop);
+          pos += dir * 7.5;
+          if (pos >= 96) dir = -1;
+          if (pos <= 4) dir = 1;
+          const m = document.getElementById("swordMarker");
+          if (m) m.style.left = `${pos}%`;
+        }, 45);
+        appState.activeIntervals.push(loop);
+
+        document.getElementById("btnDrawSword").addEventListener("click", () => {
+          if (appState.currentGameDone) return;
+          document.getElementById("btnDrawSword").disabled = true;
+          if (pos >= 66 && pos <= 88) {
+            finishMiniGame(40, "¡Reflejo fulminante! Sometes a Circe con el bronce.", true);
+          } else {
+            finishMiniGame(15, "Desenvainaste fuera de tiempo; Circe retrocede unos pasos.", false);
+          }
+        });
+        startCountdown(game.timeLimit, null, () => {
+          const b = document.getElementById("btnDrawSword");
+          if (b) b.disabled = true;
+          finishMiniGame(10, "¡Dudaste demasiado frente a la vara de Circe!", false);
+        });
+      }
+
+      // 2.3 CIRCE: Alinear constelación al viento Bóreas
+      else if (type === "constellation_align") {
+        let angle = 15;
+        area.innerHTML = `
+          <div class="gauge-track">
+            <div class="gauge-zone" style="left:43%; width:14%;"></div>
+            <div class="gauge-marker" id="starMarker" style="left:15%;"></div>
+          </div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button type="button" id="btnStarLeft" class="action-touch-btn">⬅ Girar Verga Oeste</button>
+            <button type="button" id="btnStarRight" class="action-touch-btn">Girar Verga Este ➡</button>
+            <button type="button" id="btnStarLock" class="btn-util">✨ Fijar Rumbo</button>
+          </div>
+        `;
+        const drift = setInterval(() => {
+          if (appState.currentGameDone) return clearInterval(drift);
+          angle = Math.min(95, Math.max(5, angle + (Math.random() > 0.5 ? 4 : -4)));
+          const m = document.getElementById("starMarker");
+          if (m) m.style.left = `${angle}%`;
+        }, 250);
+        appState.activeIntervals.push(drift);
+
+        document.getElementById("btnStarLeft").addEventListener("click", () => {
+          audio.playClick();
+          angle = Math.max(5, angle - 9);
+          document.getElementById("starMarker").style.left = `${angle}%`;
+        });
+        document.getElementById("btnStarRight").addEventListener("click", () => {
+          audio.playClick();
+          angle = Math.min(95, angle + 9);
+          document.getElementById("starMarker").style.left = `${angle}%`;
+        });
+        document.getElementById("btnStarLock").addEventListener("click", () => {
+          if (angle >= 42 && angle <= 58) {
+            finishMiniGame(40, "¡Rumbo exacto hacia las corrientes del Océano!", true);
+          } else {
+            finishMiniGame(15, "Rumbo desviado; el viento te corrige con dificultad.", false);
+          }
+        });
+        startCountdown(game.timeLimit, null, () => {
+          finishMiniGame(10, "¡La bruma cubrió las estrellas antes de fijar rumbo!", false);
+        });
+      }
+
+      // 3.1 HADES: Triple libación contra reloj
+      else if (type === "ritual_timed") {
+        const order = ["aguamiel", "vino", "agua"];
+        let step = 0;
+        const items = [
+          { id: "vino", label: "🍷 2. Vino dulce" },
+          { id: "agua", label: "💧 3. Agua pura" },
+          { id: "aguamiel", label: "🍯 1. Aguamiel" }
+        ];
+        area.innerHTML = `<div style="display:flex; gap:10px; flex-wrap:wrap;">${items
+          .map((it) => `<button type="button" class="action-touch-btn" data-rit="${it.id}">${it.label}</button>`)
+          .join("")}</div>`;
+        area.querySelectorAll("button").forEach((b) => {
+          b.addEventListener("click", () => {
+            if (appState.currentGameDone) return;
+            if (b.getAttribute("data-rit") === order[step]) {
+              audio.playClick();
+              b.disabled = true;
+              step++;
+              if (step === 3) finishMiniGame(40, "¡Libación triple completada sin error!", true);
+            } else {
+              audio.playDramatic();
+              showToast("Orden incorrecto: 1º Aguamiel → 2º Vino → 3º Agua.");
+            }
+          });
+        });
+        startCountdown(game.timeLimit, null, () => {
+          finishMiniGame(step >= 2 ? 20 : 10, "¡Las sombras se agolpan antes de concluir el rito!", false);
+        });
+      }
+
+      // 3.2 HADES: Contener espectros que se acercan
+      else if (type === "ward_ghosts") {
+        let repelled = 0;
+        let activeIdx = 0;
+        area.innerHTML = `
+          <div style="font-size:0.86rem; font-weight:700; margin-bottom:8px;" id="ghostScoreTxt">Sombras contenidas: 0 / 5</div>
+          <div class="shadow-arena">
+            ${[0, 1, 2, 3]
+              .map((i) => `<button type="button" class="shadow-target" data-g="${i}">👻 Sombra ${i + 1}</button>`)
+              .join("")}
+          </div>
+        `;
+        const switchGhost = () => {
+          activeIdx = Math.floor(Math.random() * 4);
+          area.querySelectorAll(".shadow-target").forEach((btn, idx) => {
+            btn.classList.toggle("active-ghost", idx === activeIdx);
+            btn.textContent = idx === activeIdx ? "⚔️ ¡CONTENER AQUÍ!" : "👻 Sombra";
+          });
+        };
+        switchGhost();
+        const gLoop = setInterval(() => {
+          if (appState.currentGameDone) return clearInterval(gLoop);
+          switchGhost();
+        }, 950);
+        appState.activeIntervals.push(gLoop);
+
+        area.querySelectorAll(".shadow-target").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            if (appState.currentGameDone) return;
+            if (Number(btn.getAttribute("data-g")) === activeIdx) {
+              audio.playClick();
+              repelled++;
+              document.getElementById("ghostScoreTxt").textContent = `Sombras contenidas: ${repelled} / 5`;
+              if (repelled >= 5) {
+                finishMiniGame(40, "¡Mantuviste el foso despejado para Tiresias!", true);
+              } else {
+                switchGhost();
+              }
+            }
+          });
+        });
+        startCountdown(game.timeLimit, null, () => {
+          finishMiniGame(repelled >= 3 ? 20 : 10, "¡Varias sombras lograron acercarse al borde!", false);
+        });
+      }
+
+      // 3.3 HADES: Memoria de 4 símbolos de la profecía
+      else if (type === "rune_memory") {
+        const runes = ["☀️ Helios", "🔱 Poseidón", "🚣 Remo", "🏛️ Ítaca"];
+        const seq = [1, 0, 2, 3];
+        let userIdx = 0;
+        let locked = true;
+        area.innerHTML = `
+          <div id="runePrompt" style="font-weight:800; color:var(--accent-bright); margin-bottom:10px;">
+            Memoriza la secuencia: ${seq.map((i) => runes[i]).join(" → ")}
+          </div>
+          <div class="rune-grid">
+            ${runes.map((r, i) => `<button type="button" class="rune-btn" data-r="${i}" disabled>${r}</button>`).join("")}
+          </div>
+        `;
+        const revealTimer = setTimeout(() => {
+          if (appState.currentGameDone) return;
+          locked = false;
+          const p = document.getElementById("runePrompt");
+          if (p) p.textContent = "Repite ahora los 4 símbolos en orden exacto:";
+          area.querySelectorAll(".rune-btn").forEach((b) => (b.disabled = false));
+        }, 3200);
+        appState.lineTimers.push(revealTimer);
+
+        area.querySelectorAll(".rune-btn").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            if (locked || appState.currentGameDone) return;
+            const picked = Number(btn.getAttribute("data-r"));
+            if (picked === seq[userIdx]) {
+              audio.playClick();
+              userIdx++;
+              if (userIdx === seq.length) {
+                finishMiniGame(40, "¡Has grabado cada palabra del adivino Tiresias!", true);
+              }
+            } else {
+              audio.playDramatic();
+              userIdx = 0;
+              showToast("Secuencia errónea; vuelve a empezar desde el primer símbolo.");
+            }
+          });
+        });
+        startCountdown(game.timeLimit, null, () => {
+          finishMiniGame(userIdx >= 2 ? 20 : 10, "¡La niebla borró parte del oráculo!", false);
+        });
+      }
+
+      // 4.1 SIRENAS: Amasar cera alternando manos
+      else if (type === "knead_wax") {
+        let wax = 0;
+        let nextHand = "L";
+        area.innerHTML = `
+          <div class="gauge-track"><div id="waxBar" style="height:100%; width:0%; background:var(--accent-bright);"></div></div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button type="button" id="btnHandL" class="action-touch-btn">🤚 Mano Izquierda</button>
+            <button type="button" id="btnHandR" class="action-touch-btn">Mano Derecha ✋</button>
+          </div>
+        `;
+        const pressHand = (hand) => {
+          if (appState.currentGameDone) return;
+          if (hand === nextHand) {
+            audio.playClick();
+            wax = Math.min(100, wax + 11);
+            nextHand = hand === "L" ? "R" : "L";
+            document.getElementById("waxBar").style.width = `${wax}%`;
+            if (wax >= 100) finishMiniGame(40, "¡Oídos de toda la tripulación sellados a tiempo!", true);
+          } else {
+            showToast("Alterna izquierda y derecha para amasar rápido.");
+          }
+        };
+        document.getElementById("btnHandL").addEventListener("click", () => pressHand("L"));
+        document.getElementById("btnHandR").addEventListener("click", () => pressHand("R"));
+        startCountdown(game.timeLimit, null, () => {
+          finishMiniGame(wax >= 60 ? 20 : 10, "¡Ya se oye el primer eco desde la isla!", false);
+        });
+      }
+
+      // 4.2 SIRENAS: Nudos en el mástil
+      else if (type === "knots_timed") {
+        let tension = 0;
+        area.innerHTML = `
+          <div class="gauge-track">
+            <div class="gauge-zone" style="left:78%; width:16%;"></div>
+            <div id="knotBar" style="height:100%; width:0%; background:var(--accent-primary);"></div>
+          </div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button type="button" id="btnRopeTurn" class="action-touch-btn">🪢 Dar vuelta (+22%)</button>
+            <button type="button" id="btnRopeFix" class="btn-util">✓ Fijar Nudo</button>
+          </div>
+        `;
+        document.getElementById("btnRopeTurn").addEventListener("click", () => {
+          if (appState.currentGameDone) return;
+          audio.playClick();
+          tension = tension >= 100 ? 20 : Math.min(100, tension + 22);
+          document.getElementById("knotBar").style.width = `${tension}%`;
+        });
+        document.getElementById("btnRopeFix").addEventListener("click", () => {
+          if (tension >= 78 && tension <= 94) {
+            finishMiniGame(40, "¡Amarras firmes al mástil!", true);
+          } else {
+            finishMiniGame(15, "Tensión imprecisa en el cabo.", false);
+          }
+        });
+        startCountdown(game.timeLimit, null, () => {
+          finishMiniGame(10, "¡Tiempo agotado al asegurar el nudo!", false);
+        });
+      }
+
+      // 4.3 SIRENAS: Resistir atracción del canto
+      else if (type === "resist_pull") {
+        let pull = 50;
+        area.innerHTML = `
+          <div class="gauge-track">
+            <div class="gauge-danger" style="left:78%; width:22%;"></div>
+            <div class="gauge-marker" id="sirenMarker" style="left:50%;"></div>
+          </div>
+          <button type="button" id="btnResistSiren" class="action-touch-btn">🧠 ¡Mantener la Lucidez!</button>
+        `;
+        const drag = setInterval(() => {
+          if (appState.currentGameDone) return clearInterval(drag);
+          pull = Math.min(98, pull + 4.8);
+          const m = document.getElementById("sirenMarker");
+          if (m) m.style.left = `${pull}%`;
+        }, 140);
+        appState.activeIntervals.push(drag);
+
+        document.getElementById("btnResistSiren").addEventListener("click", () => {
+          if (appState.currentGameDone) return;
+          audio.playClick();
+          pull = Math.max(10, pull - 12);
+          document.getElementById("sirenMarker").style.left = `${pull}%`;
+        });
+        startCountdown(game.timeLimit, null, () => {
+          if (pull < 78) {
+            finishMiniGame(40, "¡Resististe hasta dejar atrás los escollos!", true);
+          } else {
+            finishMiniGame(15, "El hechizo estuvo a punto de quebrantar tus ataduras.", false);
+          }
+        });
+      }
+
+      // 5.1 ESCILA: Timón en la tormenta
+      else if (type === "helm_storm") {
+        let pos = 55;
+        area.innerHTML = `
+          <div style="display:flex; justify-content:space-between; font-size:0.8rem; font-weight:700;">
+            <span>🐍 Escila (Ruta segura: 24%-48%)</span>
+            <span>🌀 Succión Caribdis</span>
+          </div>
+          <div class="gauge-track">
+            <div class="gauge-zone" style="left:24%; width:24%;"></div>
+            <div class="gauge-marker" id="helmStormMarker" style="left:55%;"></div>
+          </div>
+          <div style="display:flex; gap:10px; justify-content:center;">
+            <button type="button" id="btnHelmPort" class="action-touch-btn">⬅ Babor</button>
+            <button type="button" id="btnHelmStar" class="action-touch-btn">Estribor ➡</button>
+          </div>
+        `;
+        const current = setInterval(() => {
+          if (appState.currentGameDone) return clearInterval(current);
+          pos = Math.min(95, Math.max(5, pos + 4.2));
+          const m = document.getElementById("helmStormMarker");
+          if (m) m.style.left = `${pos}%`;
+        }, 180);
+        appState.activeIntervals.push(current);
+
+        document.getElementById("btnHelmPort").addEventListener("click", () => {
+          audio.playClick();
+          pos = Math.max(5, pos - 12);
+          document.getElementById("helmStormMarker").style.left = `${pos}%`;
+        });
+        document.getElementById("btnHelmStar").addEventListener("click", () => {
+          audio.playClick();
+          pos = Math.min(95, pos + 10);
+          document.getElementById("helmStormMarker").style.left = `${pos}%`;
+        });
+        startCountdown(game.timeLimit, null, () => {
+          if (pos >= 22 && pos <= 52) {
+            finishMiniGame(40, "¡Mantuviste el trirreme fuera del remolino!", true);
+          } else {
+            finishMiniGame(15, "La corriente desvió peligrosamente la popa.", false);
+          }
+        });
+      }
+
+      // 5.2 ESCILA: Cadencia de remos
+      else if (type === "row_cadence") {
+        let speed = 0;
+        area.innerHTML = `
+          <div class="gauge-track"><div id="rowBar" style="height:100%; width:0%; background:#38bdf8;"></div></div>
+          <button type="button" id="btnRowFast" class="action-touch-btn">🚣 ¡Bogar con Fuerza!</button>
+        `;
+        const drag = setInterval(() => {
+          if (appState.currentGameDone) return clearInterval(drag);
+          speed = Math.max(0, speed - 3.5);
+          const b = document.getElementById("rowBar");
+          if (b) b.style.width = `${speed}%`;
+        }, 160);
+        appState.activeIntervals.push(drag);
+
+        document.getElementById("btnRowFast").addEventListener("click", () => {
+          if (appState.currentGameDone) return;
+          audio.playClick();
+          speed = Math.min(100, speed + 11);
+          document.getElementById("rowBar").style.width = `${speed}%`;
+          if (speed >= 100) finishMiniGame(40, "¡Velocidad máxima alcanzada en el estrecho!", true);
+        });
+        startCountdown(game.timeLimit, null, () => {
+          finishMiniGame(speed >= 65 ? 20 : 10, "¡Cruzaste el paso entre fuertes sacudidas!", false);
+        });
+      }
+
+      // 5.3 ESCILA: 4 escudos en secuencia
+      else if (type === "shield_brace") {
+        let next = 1;
+        area.innerHTML = `<div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px;">${[3, 1, 4, 2]
+          .map((n) => `<button type="button" class="action-touch-btn" data-sh="${n}">🛡️ ${n}</button>`)
+          .join("")}</div>`;
+        area.querySelectorAll("button").forEach((b) => {
+          b.addEventListener("click", () => {
+            if (appState.currentGameDone) return;
+            if (Number(b.getAttribute("data-sh")) === next) {
+              audio.playClick();
+              b.disabled = true;
+              next++;
+              if (next > 4) finishMiniGame(40, "¡Cubierta asegurada tras cruzar el estrecho!", true);
+            } else {
+              audio.playDramatic();
+              showToast("Orden numérico: 1 → 2 → 3 → 4.");
+            }
+          });
+        });
+        startCountdown(game.timeLimit, null, () => {
+          finishMiniGame(next >= 3 ? 20 : 10, "¡La ola barrió la cubierta antes de cerrar!", false);
+        });
+      }
+
+      // 6.1 ÍTACA: Controlar ira frente a pretendientes
+      else if (type === "calm_meter") {
+        let anger = 35;
+        area.innerHTML = `
+          <div class="gauge-track">
+            <div class="gauge-zone" style="left:10%; width:45%;"></div>
+            <div class="gauge-marker" id="calmMarker" style="left:35%;"></div>
+          </div>
+          <button type="button" id="btnTemperAnger" class="action-touch-btn">🧘 Templar el Corazón</button>
+        `;
+        const taunt = setInterval(() => {
+          if (appState.currentGameDone) return clearInterval(taunt);
+          anger = Math.min(96, anger + 5.2);
+          const m = document.getElementById("calmMarker");
+          if (m) m.style.left = `${anger}%`;
+        }, 150);
+        appState.activeIntervals.push(taunt);
+
+        document.getElementById("btnTemperAnger").addEventListener("click", () => {
+          if (appState.currentGameDone) return;
+          audio.playClick();
+          anger = Math.max(12, anger - 14);
+          document.getElementById("calmMarker").style.left = `${anger}%`;
+        });
+        startCountdown(game.timeLimit, null, () => {
+          if (anger <= 56) {
+            finishMiniGame(40, "¡Mantuviste el disfraz sin delatarte!", true);
+          } else {
+            finishMiniGame(15, "Tu mirada fulminante casi descubre tu identidad.", false);
+          }
+        });
+      }
+
+      // 6.2 ÍTACA: Encordar el gran arco
+      else if (type === "bow_string") {
+        let bend = 0;
+        area.innerHTML = `
+          <div class="gauge-track">
+            <div class="gauge-zone" style="left:82%; width:14%;"></div>
+            <div id="bendBar" style="height:100%; width:0%; background:#eab308;"></div>
+          </div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button type="button" id="btnBendBow" class="action-touch-btn">💪 Doblar Madera (+19%)</button>
+            <button type="button" id="btnHookString" class="btn-util">🏹 Enganchar Cuerda</button>
+          </div>
+        `;
+        document.getElementById("btnBendBow").addEventListener("click", () => {
+          if (appState.currentGameDone) return;
+          audio.playClick();
+          bend = bend >= 100 ? 15 : Math.min(100, bend + 19);
+          document.getElementById("bendBar").style.width = `${bend}%`;
+        });
+        document.getElementById("btnHookString").addEventListener("click", () => {
+          if (bend >= 80 && bend <= 96) {
+            finishMiniGame(40, "¡El arco queda encordado y canta como una golondrina!", true);
+          } else {
+            finishMiniGame(15, "Tensión desigual al encajar la cuerda.", false);
+          }
+        });
+        startCountdown(game.timeLimit, null, () => {
+          finishMiniGame(10, "¡Tiempo agotado al encordar el arco!", false);
+        });
+      }
+
+      // 6.3 ÍTACA: Disparo a través de las 12 hachas
+      else if (type === "axe_shot") {
+        let aim = 8;
+        let dir = 1;
+        area.innerHTML = `
+          <div class="gauge-track">
+            <div class="gauge-zone" style="left:44%; width:12%;"></div>
+            <div class="gauge-marker" id="axeMarker" style="left:8%;"></div>
+          </div>
+          <button type="button" id="btnShootAxes" class="action-touch-btn">🎯 ¡Soltar Flecha!</button>
+        `;
+        const loop = setInterval(() => {
+          if (appState.currentGameDone) return clearInterval(loop);
+          aim += dir * 7.2;
+          if (aim >= 95) dir = -1;
+          if (aim <= 5) dir = 1;
+          const m = document.getElementById("axeMarker");
+          if (m) m.style.left = `${aim}%`;
+        }, 42);
+        appState.activeIntervals.push(loop);
+
+        document.getElementById("btnShootAxes").addEventListener("click", () => {
+          if (appState.currentGameDone) return;
+          document.getElementById("btnShootAxes").disabled = true;
+          if (aim >= 43 && aim <= 57) {
+            finishMiniGame(40, "¡Tiro maestro! La flecha atraviesa las doce hachas.", true);
+          } else {
+            finishMiniGame(15, "La flecha roza el bronce del último anillo.", false);
+          }
+        });
+        startCountdown(game.timeLimit, null, () => {
+          const b = document.getElementById("btnShootAxes");
+          if (b) b.disabled = true;
+          finishMiniGame(10, "¡Perdiste el instante óptimo de disparo!", false);
+        });
+      }
+    }
+
+    /* ==========================================================================
+       8. EVALUACIÓN DE CADA MOMENTO Y RESUMEN FINAL DEL CAPÍTULO
+       ========================================================================== */
+    function evaluateMomentChoice(ch, mom, chosen) {
+      clearAllTimers();
+      appState.view = "moment_feedback";
+
+      const choicePts = chosen.isCanonical ? 60 : 20;
+      const momentTotal = appState.currentGameScore + choicePts;
+
+      appState.momentRecords.push({
+        gamePts: appState.currentGameScore,
+        choicePts,
+        total: momentTotal,
+        isCanonical: chosen.isCanonical
+      });
+
+      if (chosen.isCanonical) {
+        audio.playTriumph();
+      } else {
+        audio.playDramatic();
+      }
+
+      const isLastMoment = appState.momentIndex >= ch.moments.length - 1;
+
+      appStage.innerHTML = `
+        <article class="monument-card">
+          <div class="scene-visual">
+            <span class="canto-badge">Resolución · Escena ${appState.momentIndex + 1} de 3</span>
+            ${ch.illustration}
+          </div>
+
+          <div class="scene-body">
+            <div class="eval-banner ${chosen.isCanonical ? "canonical" : "alternative"}">
+              <span>${chosen.isCanonical ? "✓ Decisión fiel al poema original de Homero" : "⚠ Desviación del relato homérico"}</span>
+              <span>+${momentTotal} / 100 pts</span>
+            </div>
+
+            <h1 class="scene-title">${mom.title}</h1>
+
+            <div class="narrative-box">
+              <p class="narrative-line visible">${chosen.outcome}</p>
+            </div>
+
+            <div class="score-breakdown">
+              <div class="breakdown-cell">
+                <span>Minijuego Cronometrado</span>
+                <strong>${appState.currentGameScore} / 40</strong>
+              </div>
+              <div class="breakdown-cell">
+                <span>Comprensión Homérica</span>
+                <strong>${choicePts} / 60</strong>
+              </div>
+              <div class="breakdown-cell">
+                <span>Total Escena ${appState.momentIndex + 1}</span>
+                <strong>${momentTotal} / 100</strong>
+              </div>
+            </div>
+
+            <div class="philology-note">
+              <h4>📜 Nota Filológica del Pasaje</h4>
+              <p>${chosen.philology}</p>
+            </div>
+
+            <div class="btn-row">
+              <button type="button" id="btnProceedMoment" class="btn-epic">
+                <span>${isLastMoment ? "🏆" : "⛵"}</span>
+                <span>${isLastMoment ? "Ver Evaluación Final del Capítulo" : `Continuar a Escena ${appState.momentIndex + 2} de 3`}</span>
+              </button>
+            </div>
+          </div>
+        </article>
+      `;
+
+      document.getElementById("btnProceedMoment").addEventListener("click", () => {
+        audio.playClick();
+        if (!isLastMoment) {
+          appState.momentIndex++;
+          renderMoment();
+        } else {
+          renderChapterEvaluation(ch);
+        }
+      });
+    }
+
+    function renderChapterEvaluation(ch) {
+      clearAllTimers();
+      appState.view = "chapter_summary";
+
+      const totalChapterPts = appState.momentRecords.reduce((acc, r) => acc + r.total, 0);
+      const canonicalCount = appState.momentRecords.filter((r) => r.isCanonical).length;
+
+      sessionData.completed[ch.id] = {
+        total: totalChapterPts,
+        canonicalCount
+      };
+      saveSessionState(sessionData);
+      updateGlobalHUD(ch.theme);
+      audio.playTriumph();
+
+      const hasNextChapter = appState.chapterIndex < CHAPTERS.length - 1;
+
+      const breakdownCards = appState.momentRecords
+        .map(
+          (rec, idx) => `
+          <div class="breakdown-cell">
+            <span>Escena ${idx + 1} (${rec.isCanonical ? "Homérica" : "Alternativa"})</span>
+            <strong>${rec.total} / 100 pts</strong>
+          </div>
+        `
+        )
+        .join("");
+
+      appStage.innerHTML = `
+        <article class="monument-card">
+          <div class="scene-visual">
+            <span class="canto-badge">Evaluación del Canto · Capítulo ${ch.number}</span>
+            ${ch.illustration}
+          </div>
+
+          <div class="scene-body">
+            <div class="eval-banner canonical">
+              <span>🏛️ Capítulo Completado: ${ch.title}</span>
+              <span>${totalChapterPts} / 300 pts guardados</span>
+            </div>
+
+            <h1 class="scene-title">Balance de Astucia en el ${ch.canto.split("·")[0].trim()}</h1>
+            <p class="scene-subtitle">Aciertos fieles al texto original de Homero: ${canonicalCount} de 3 escenas.</p>
+
+            <div class="score-breakdown">
+              ${breakdownCards}
+            </div>
+
+            <div class="btn-row" style="margin-top: 22px;">
+              <button type="button" id="btnReturnMap" class="btn-secondary">
+                <span>🏛️</span>
+                <span>Volver al Mapa de Capítulos</span>
+              </button>
+              ${
+                hasNextChapter
+                  ? `<button type="button" id="btnStartNextChapter" class="btn-epic">
+                      <span>⛵</span>
+                      <span>Siguiente Capítulo (${CHAPTERS[appState.chapterIndex + 1].number})</span>
+                    </button>`
+                  : `<button type="button" id="btnAllComplete" class="btn-epic">
+                      <span>👑</span>
+                      <span>Ver Resumen Global de la Odisea</span>
+                    </button>`
+              }
+            </div>
+          </div>
+        </article>
+      `;
+
+      document.getElementById("btnReturnMap").addEventListener("click", () => {
+        audio.playClick();
+        renderHub();
+      });
+
+      const nextChBtn = document.getElementById("btnStartNextChapter");
+      if (nextChBtn) {
+        nextChBtn.addEventListener("click", () => {
+          audio.playClick();
+          startChapter(appState.chapterIndex + 1);
+        });
+      }
+
+      const allDoneBtn = document.getElementById("btnAllComplete");
+      if (allDoneBtn) {
+        allDoneBtn.addEventListener("click", () => {
+          audio.playTriumph();
+          renderHub();
+          showToast(`¡Travesía completa! Puntaje total de sesión: ${getTotalSessionScore()} / 1800`);
+        });
+      }
+    }
+
+    /* ==========================================================================
+       9. EVENTOS GLOBALES: AUDIO, SELECTOR MUSICAL Y DESCARGA OFFLINE EN HTML
+       ========================================================================== */
+    btnMenuHub.addEventListener("click", () => {
+      audio.init();
+      audio.playClick();
+      renderHub();
+    });
+
+    btnHomeBrand.addEventListener("click", () => {
+      audio.init();
+      audio.playClick();
+      renderHub();
+    });
+
+    musicModeSelect.addEventListener("change", (e) => {
+      audio.init();
+      audio.setOverride(e.target.value);
+      audio.playClick();
+      showToast("Ambientación musical actualizada.");
+    });
+
+    btnAudioToggle.addEventListener("click", () => {
+      const active = audio.toggle();
+      btnAudioToggle.setAttribute("aria-pressed", String(active));
+      audioIcon.textContent = active ? "🔊" : "🔇";
+      audioLabel.textContent = active ? "Audio" : "Silencio";
+      showToast(active ? "Música y efectos activados" : "Audio silenciado");
+    });
+
+    btnDownloadHtml.addEventListener("click", () => {
+      audio.playClick();
+      try {
+        const clone = document.documentElement.cloneNode(true);
+        clone.body.setAttribute("data-theme", "default");
+        const cloneSelect = clone.querySelector("#musicModeSelect");
+        if (cloneSelect) cloneSelect.value = "auto";
+        const cloneStage = clone.querySelector("#appStage");
+        if (cloneStage) cloneStage.innerHTML = "";
+        const cloneToast = clone.querySelector("#toastNotice");
+        if (cloneToast) {
+          cloneToast.classList.remove("show");
+          cloneToast.textContent = "";
+        }
+
+        const fullHtml = "<!DOCTYPE html>\n" + clone.outerHTML;
+        const blob = new Blob([fullHtml], { type: "text/html;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "la_odisea_18_escenas_homero.html";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
+        showToast("Archivo HTML completo descargado (100% offline).");
+      } catch (err) {
+        showToast("No se pudo iniciar la descarga en este navegador.");
+      }
+    });
+
+    window.addEventListener("DOMContentLoaded", () => {
+      renderHub();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,2411 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Atlas Interactivo de Anatomía y Fisiología Cardíaca</title>
+  <style>
+    /* ==========================================================================
+       SISTEMA DE DISEÑO: REVISTA MÉDICA EDITORIAL (ALTO CONTRASTE EN AULA)
+       Jerarquía estricta de capas (z-index) y diseño 100% autocontenido offline.
+       ========================================================================== */
+    :root {
+      --bg-canvas: #f1f5f9;
+      --bg-surface: #ffffff;
+      --bg-subtle: #e2e8f0;
+      --text-primary: #0f172a;
+      --text-secondary: #334155;
+      --text-muted: #64748b;
+      --border-light: #cbd5e1;
+
+      /* Paleta Anatómica Oficial */
+      --oxy-primary: #be123c;
+      --oxy-bright: #e11d48;
+      --oxy-soft: #ffe4e6;
+      --oxy-border: #fda4af;
+
+      --deoxy-primary: #1d4ed8;
+      --deoxy-bright: #2563eb;
+      --deoxy-soft: #dbeafe;
+      --deoxy-border: #93c5fd;
+
+      --valve-primary: #0f766e;
+      --valve-soft: #ccfbf1;
+      --valve-border: #5eead4;
+
+      --success: #15803d;
+      --success-bg: #dcfce7;
+      --error: #b91c1c;
+      --error-bg: #fee2e2;
+
+      --shadow-sm: 0 2px 6px rgba(15, 23, 42, 0.06);
+      --shadow-md: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 4px 10px -2px rgba(15, 23, 42, 0.04);
+      --shadow-lg: 0 24px 48px -12px rgba(15, 23, 42, 0.22);
+
+      --radius-md: 12px;
+      --radius-lg: 18px;
+      --radius-pill: 9999px;
+      --transition-fast: 160ms cubic-bezier(0.2, 0.8, 0.2, 1);
+      --transition-smooth: 280ms cubic-bezier(0.2, 0.8, 0.2, 1);
+
+      /* Jerarquía de Z-Index (Cero superposiciones ocultas) */
+      --z-base: 1;
+      --z-header: 100;
+      --z-drawer-backdrop: 950;
+      --z-drawer-panel: 1000;
+      --z-modal-achievement: 9999;
+      --z-toast: 10500;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-canvas);
+      color: var(--text-primary);
+      line-height: 1.55;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    body.overlay-open {
+      overflow: hidden;
+    }
+
+    /* ==========================================================================
+       CABECERA Y BARRA DE PROGRESO (z-index: 100)
+       ========================================================================== */
+    .app-header {
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-light);
+      box-shadow: var(--shadow-sm);
+      position: sticky;
+      top: 0;
+      z-index: var(--z-header);
+      padding: 0.75rem 1rem;
+    }
+
+    .header-inner {
+      max-width: 1320px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+    }
+
+    .brand-badge {
+      width: 42px;
+      height: 42px;
+      border-radius: 11px;
+      background: linear-gradient(135deg, var(--oxy-primary), var(--deoxy-primary));
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+      box-shadow: 0 3px 10px rgba(190, 18, 60, 0.28);
+    }
+
+    .brand-text h1 {
+      font-size: 1.08rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+
+    .brand-text p {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-icon {
+      min-height: 46px;
+      padding: 0 0.95rem;
+      border-radius: var(--radius-md);
+      border: 1.5px solid var(--border-light);
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      transition: transform var(--transition-fast), background-color var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+      user-select: none;
+    }
+
+    .btn-icon:hover {
+      background: #f8fafc;
+      border-color: #94a3b8;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-icon:active {
+      transform: scale(0.97);
+    }
+
+    .btn-icon.muted {
+      background: #f1f5f9;
+      color: var(--text-muted);
+    }
+
+    .btn-download-mini {
+      background: #0f172a;
+      color: #ffffff;
+      border-color: #0f172a;
+    }
+
+    .btn-download-mini:hover {
+      background: #1e293b;
+      border-color: #1e293b;
+    }
+
+    /* Barra de progreso */
+    .progress-section {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+
+    .progress-track {
+      flex: 1;
+      height: 12px;
+      background: var(--bg-subtle);
+      border-radius: var(--radius-pill);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--deoxy-bright), var(--oxy-bright));
+      border-radius: var(--radius-pill);
+      transition: width 420ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .progress-label {
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ==========================================================================
+       LAYOUT PRINCIPAL (MOBILE-FIRST -> DESKTOP >= 900px 2 COLUMNAS)
+       Sin overflow:hidden en contenedores que puedan recortar tarjetas o pines.
+       ========================================================================== */
+    .main-container {
+      max-width: 1320px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 1rem;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+      flex: 1;
+      position: relative;
+      z-index: var(--z-base);
+    }
+
+    @media (min-width: 900px) {
+      .main-container {
+        grid-template-columns: 1.12fr 0.88fr;
+        padding: 1.5rem;
+        align-items: start;
+      }
+    }
+
+    /* Tarjetas Flotantes */
+    .card {
+      background: var(--bg-surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      border: 1px solid rgba(203, 213, 225, 0.85);
+      overflow: visible;
+    }
+
+    /* ==========================================================================
+       PANEL IZQUIERDO: DIAGRAMA ANATÓMICO SVG + ÍNDICE TÁCTIL
+       ========================================================================== */
+    .diagram-card {
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.9rem;
+    }
+
+    .diagram-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      border-bottom: 1px solid #f1f5f9;
+      padding-bottom: 0.65rem;
+    }
+
+    .diagram-title {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .legend-group {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .dot-oxy, .dot-deoxy, .dot-valve {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .dot-oxy { background: var(--oxy-primary); }
+    .dot-deoxy { background: var(--deoxy-primary); }
+    .dot-valve { background: var(--valve-primary); }
+
+    .svg-stage {
+      background: radial-gradient(circle at 50% 48%, #ffffff 0%, #f8fafc 74%, #e2e8f0 100%);
+      border-radius: var(--radius-md);
+      border: 1px solid #cbd5e1;
+      padding: 0.45rem;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: visible;
+    }
+
+    svg#heart-svg {
+      width: 100%;
+      max-width: 560px;
+      height: auto;
+      display: block;
+      touch-action: manipulation;
+      overflow: visible;
+    }
+
+    /* Micro-animación fisiológica de sístole/diástole sutil */
+    @keyframes subtlePulse {
+      0%, 100% { transform: scale(1); }
+      14% { transform: scale(1.012); }
+      28% { transform: scale(1); }
+      42% { transform: scale(1.007); }
+      70% { transform: scale(1); }
+    }
+
+    @keyframes flowDash {
+      to { stroke-dashoffset: -24; }
+    }
+
+    @keyframes pinPulseRing {
+      0% { transform: scale(1); opacity: 0.85; }
+      70% { transform: scale(1.55); opacity: 0; }
+      100% { transform: scale(1.55); opacity: 0; }
+    }
+
+    .heart-living-group {
+      transform-origin: 280px 300px;
+      animation: subtlePulse 2.8s infinite ease-in-out;
+    }
+
+    .flow-arrow {
+      stroke-dasharray: 5 7;
+      animation: flowDash 1.45s linear infinite;
+      pointer-events: none;
+    }
+
+    /* Zonas anatómicas clicables */
+    .anatomy-zone {
+      cursor: pointer;
+      transition: filter var(--transition-fast), opacity var(--transition-fast);
+      outline: none;
+    }
+
+    .anatomy-zone:hover {
+      filter: brightness(1.07);
+    }
+
+    .anatomy-zone.active-zone {
+      filter: brightness(1.1) drop-shadow(0 0 8px rgba(245, 158, 11, 0.72));
+    }
+
+    /* Capa de Pines Numerados (#layer-pins): siempre en primer plano dentro del SVG */
+    .pin-marker {
+      cursor: pointer;
+      outline: none;
+      transition: transform var(--transition-fast);
+      transform-box: fill-box;
+      transform-origin: center;
+    }
+
+    .pin-marker:hover {
+      transform: scale(1.16);
+    }
+
+    .pin-marker.active-pin {
+      transform: scale(1.22);
+    }
+
+    .pin-pulse-ring {
+      display: none;
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: pinPulseRing 1.6s infinite ease-out;
+      pointer-events: none;
+    }
+
+    .pin-marker.active-pin .pin-pulse-ring {
+      display: block;
+    }
+
+    /* Botón flotante móvil para abrir la ficha activa si el usuario cerró el drawer */
+    .mobile-open-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      background: #0f172a;
+      color: #ffffff;
+      padding: 0.75rem 1rem;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-md);
+    }
+
+    @media (min-width: 900px) {
+      .mobile-open-bar {
+        display: none;
+      }
+    }
+
+    .mobile-open-bar span {
+      font-size: 0.86rem;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+
+    .btn-open-drawer {
+      min-height: 44px;
+      padding: 0 0.9rem;
+      border-radius: 10px;
+      border: none;
+      background: var(--oxy-bright);
+      color: #ffffff;
+      font-size: 0.84rem;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    /* Selector Rápido por Píldoras Táctiles */
+    .quick-nav-label {
+      font-size: 0.78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+    }
+
+    .structure-pills {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem;
+    }
+
+    .pill-btn {
+      min-height: 48px;
+      padding: 0.45rem 0.65rem;
+      border-radius: var(--radius-md);
+      border: 1.5px solid var(--border-light);
+      background: #ffffff;
+      color: var(--text-primary);
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      transition: all var(--transition-fast);
+    }
+
+    .pill-btn:hover {
+      background: #f8fafc;
+      border-color: #94a3b8;
+    }
+
+    .pill-btn:active {
+      transform: scale(0.98);
+    }
+
+    .pill-btn.selected {
+      border-color: var(--text-primary);
+      background: #f1f5f9;
+      box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.14);
+    }
+
+    .pill-btn.completed {
+      border-color: #86efac;
+      background: #f0fdf4;
+    }
+
+    .pill-btn.completed.selected {
+      border-color: var(--success);
+      box-shadow: 0 0 0 2px rgba(21, 128, 61, 0.2);
+    }
+
+    .pill-num {
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      font-size: 0.76rem;
+      font-weight: 800;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      color: #fff;
+    }
+
+    .pill-num.deoxy { background: var(--deoxy-primary); }
+    .pill-num.oxy { background: var(--oxy-primary); }
+    .pill-num.valve { background: var(--valve-primary); }
+
+    .pill-title {
+      flex: 1;
+      line-height: 1.22;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .pill-check {
+      font-size: 0.92rem;
+      color: var(--success);
+      font-weight: 900;
+    }
+
+    /* ==========================================================================
+       PANEL DERECHO / DRAWER MÓVIL DESLIZANTE (z-index: 1000 en móvil)
+       En móvil (< 900px): modal/drawer fijo con fondo semitransparente, scroll
+       interno y botón de cierre de 48px.
+       En escritorio (>= 900px): columna lateral fija/sticky siempre visible.
+       ========================================================================== */
+    .drawer-backdrop {
+      display: none;
+    }
+
+    @media (max-width: 899px) {
+      .drawer-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.58);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        z-index: var(--z-drawer-backdrop);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity var(--transition-smooth);
+        display: block;
+      }
+
+      .drawer-backdrop.open {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .detail-card {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        max-height: 88vh;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        z-index: var(--z-drawer-panel);
+        border-radius: 22px 22px 0 0;
+        box-shadow: var(--shadow-lg);
+        padding: 1.15rem 1.15rem 1.75rem;
+        transform: translateY(104%);
+        transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+      }
+
+      .detail-card.drawer-open {
+        transform: translateY(0);
+      }
+    }
+
+    @media (min-width: 900px) {
+      .detail-card {
+        position: sticky;
+        top: 6.4rem;
+        max-height: calc(100vh - 7.6rem);
+        overflow-y: auto;
+        padding: 1.35rem;
+        z-index: 10;
+      }
+    }
+
+    .detail-card {
+      display: flex;
+      flex-direction: column;
+      gap: 1.05rem;
+      background: var(--bg-surface);
+    }
+
+    .detail-card.animate-in {
+      animation: cardSlideIn 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    @keyframes cardSlideIn {
+      from { opacity: 0.72; }
+      to { opacity: 1; }
+    }
+
+    /* Barra superior exclusiva del drawer móvil con botón de cierre de 48px */
+    .drawer-mobile-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding-bottom: 0.65rem;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    @media (min-width: 900px) {
+      .drawer-mobile-header {
+        display: none;
+      }
+    }
+
+    .drawer-drag-pill {
+      width: 42px;
+      height: 5px;
+      border-radius: 999px;
+      background: #cbd5e1;
+      margin: 0 auto 0.35rem;
+    }
+
+    .drawer-header-label {
+      font-size: 0.78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+    }
+
+    .btn-close-drawer {
+      min-width: 48px;
+      min-height: 48px;
+      padding: 0 0.85rem;
+      border-radius: var(--radius-md);
+      border: 1.5px solid var(--border-light);
+      background: #f8fafc;
+      color: var(--text-primary);
+      font-size: 0.92rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+    }
+
+    .btn-close-drawer:active {
+      transform: scale(0.96);
+    }
+
+    .meta-badges {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .badge {
+      padding: 0.3rem 0.7rem;
+      border-radius: var(--radius-pill);
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    .badge-deoxy {
+      background: var(--deoxy-soft);
+      color: var(--deoxy-primary);
+      border: 1px solid var(--deoxy-border);
+    }
+
+    .badge-oxy {
+      background: var(--oxy-soft);
+      color: var(--oxy-primary);
+      border: 1px solid var(--oxy-border);
+    }
+
+    .badge-valve {
+      background: var(--valve-soft);
+      color: var(--valve-primary);
+      border: 1px solid var(--valve-border);
+    }
+
+    .badge-neutral {
+      background: #f1f5f9;
+      color: var(--text-secondary);
+      border: 1px solid #cbd5e1;
+    }
+
+    .structure-heading h2 {
+      font-size: 1.38rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      line-height: 1.22;
+      letter-spacing: -0.02em;
+    }
+
+    .latin-name {
+      font-size: 0.86rem;
+      font-style: italic;
+      color: var(--text-muted);
+      margin-top: 0.2rem;
+      font-weight: 500;
+    }
+
+    /* Cuadrícula de parámetros hemodinámicos */
+    .hemo-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.6rem;
+    }
+
+    .hemo-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: var(--radius-md);
+      padding: 0.65rem 0.8rem;
+    }
+
+    .hemo-label {
+      font-size: 0.71rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      letter-spacing: 0.03em;
+    }
+
+    .hemo-value {
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-top: 0.15rem;
+    }
+
+    .physio-body {
+      font-size: 0.96rem;
+      color: var(--text-secondary);
+      line-height: 1.62;
+    }
+
+    .physio-body strong {
+      color: var(--text-primary);
+    }
+
+    /* Bloque de Micro-Pregunta */
+    .quiz-box {
+      background: #f8fafc;
+      border: 1.5px solid #cbd5e1;
+      border-radius: var(--radius-md);
+      padding: 1.05rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .quiz-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    .quiz-tag {
+      font-size: 0.74rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #0f172a;
+      background: #e2e8f0;
+      padding: 0.22rem 0.6rem;
+      border-radius: 6px;
+    }
+
+    .quiz-status-text {
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: var(--text-muted);
+    }
+
+    .quiz-question {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.45;
+    }
+
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+    }
+
+    .option-btn {
+      min-height: 48px;
+      width: 100%;
+      padding: 0.7rem 0.9rem;
+      border-radius: var(--radius-md);
+      border: 1.5px solid var(--border-light);
+      background: #ffffff;
+      color: var(--text-primary);
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.65rem;
+      line-height: 1.4;
+      transition: all var(--transition-fast);
+    }
+
+    .option-btn:hover:not(:disabled) {
+      border-color: #64748b;
+      background: #f1f5f9;
+    }
+
+    .option-btn:active:not(:disabled) {
+      transform: scale(0.99);
+    }
+
+    .option-letter {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      background: #e2e8f0;
+      color: var(--text-primary);
+      font-size: 0.78rem;
+      font-weight: 800;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .option-btn.correct-choice {
+      background: var(--success-bg);
+      border-color: var(--success);
+      color: #14532d;
+    }
+
+    .option-btn.correct-choice .option-letter {
+      background: var(--success);
+      color: #ffffff;
+    }
+
+    .option-btn.wrong-choice {
+      background: var(--error-bg);
+      border-color: var(--error);
+      color: #7f1d1d;
+    }
+
+    .option-btn.wrong-choice .option-letter {
+      background: var(--error);
+      color: #ffffff;
+    }
+
+    .feedback-panel {
+      padding: 0.85rem 1rem;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      line-height: 1.5;
+      display: none;
+    }
+
+    .feedback-panel.visible {
+      display: block;
+      animation: cardSlideIn 200ms ease-out;
+    }
+
+    .feedback-panel.success {
+      background: var(--success-bg);
+      border: 1px solid #86efac;
+      color: #14532d;
+    }
+
+    .feedback-panel.error {
+      background: var(--error-bg);
+      border: 1px solid #fca5a5;
+      color: #7f1d1d;
+    }
+
+    .nav-footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-top: 0.25rem;
+    }
+
+    .btn-nav {
+      flex: 1;
+      min-height: 48px;
+      border-radius: var(--radius-md);
+      border: 1.5px solid var(--border-light);
+      background: #ffffff;
+      color: var(--text-primary);
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .btn-nav:hover {
+      background: #f1f5f9;
+      border-color: #94a3b8;
+    }
+
+    .btn-nav:active {
+      transform: scale(0.98);
+    }
+
+    .btn-nav.primary {
+      background: var(--text-primary);
+      color: #ffffff;
+      border-color: var(--text-primary);
+    }
+
+    .btn-nav.primary:hover {
+      background: #1e293b;
+    }
+
+    /* ==========================================================================
+       MODAL FINAL DE LOGRO Y DESCARGA (z-index: 9999 - PRIMER PLANO ABSOLUTO)
+       ========================================================================== */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.72);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      z-index: var(--z-modal-achievement);
+      overflow-y: auto;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+      animation: fadeIn 220ms ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal-card {
+      background: #ffffff;
+      border-radius: 20px;
+      max-width: 520px;
+      width: 100%;
+      padding: 1.75rem;
+      box-shadow: var(--shadow-lg);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 1.1rem;
+      border: 1px solid #e2e8f0;
+      position: relative;
+      z-index: calc(var(--z-modal-achievement) + 1);
+      margin: auto;
+    }
+
+    .trophy-circle {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #fef3c7, #fde68a);
+      border: 2px solid #f59e0b;
+      display: grid;
+      place-items: center;
+      font-size: 2.1rem;
+      margin: 0 auto;
+      box-shadow: 0 8px 20px rgba(245, 158, 11, 0.25);
+    }
+
+    .modal-card h2 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      line-height: 1.25;
+    }
+
+    .modal-card p {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.6rem;
+      background: #f8fafc;
+      padding: 0.85rem;
+      border-radius: var(--radius-md);
+      border: 1px solid #e2e8f0;
+    }
+
+    .stat-item strong {
+      display: block;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    .stat-item span {
+      font-size: 0.74rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .modal-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      margin-top: 0.25rem;
+    }
+
+    .btn-modal-primary {
+      min-height: 50px;
+      border-radius: var(--radius-md);
+      border: none;
+      background: linear-gradient(135deg, var(--oxy-primary), #9f1239);
+      color: #ffffff;
+      font-size: 0.95rem;
+      font-weight: 800;
+      cursor: pointer;
+      padding: 0.75rem 1rem;
+      box-shadow: 0 6px 16px rgba(190, 18, 60, 0.28);
+      transition: transform var(--transition-fast), filter var(--transition-fast);
+    }
+
+    .btn-modal-primary:hover {
+      filter: brightness(1.06);
+    }
+
+    .btn-modal-primary:active {
+      transform: scale(0.98);
+    }
+
+    .btn-modal-secondary {
+      min-height: 48px;
+      border-radius: var(--radius-md);
+      border: 1.5px solid var(--border-light);
+      background: #ffffff;
+      color: var(--text-primary);
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 0.65rem 1rem;
+    }
+
+    .btn-modal-secondary:hover {
+      background: #f1f5f9;
+    }
+
+    /* Toast flotante en el nivel más alto (z-index: 10500) */
+    .toast {
+      position: fixed;
+      bottom: 1.25rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #0f172a;
+      color: #ffffff;
+      padding: 0.75rem 1.25rem;
+      border-radius: var(--radius-pill);
+      font-size: 0.88rem;
+      font-weight: 700;
+      box-shadow: var(--shadow-lg);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 220ms ease, transform 220ms ease;
+      z-index: var(--z-toast);
+      text-align: center;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ========================================================================
+       CABECERA PRINCIPAL Y PROGRESO DE DOMINIO
+       ======================================================================== -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="header-top">
+        <div class="brand">
+          <div class="brand-badge" aria-hidden="true">♥</div>
+          <div class="brand-text">
+            <h1>Atlas Cardíaco Interactivo</h1>
+            <p>Anatomía y Fisiología Humana · Primer Año</p>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <button type="button" id="btn-mute" class="btn-icon" aria-pressed="false" title="Activar o silenciar efectos de sonido">
+            <span id="mute-icon">🔊</span>
+            <span id="mute-label">Sonido</span>
+          </button>
+          <button type="button" id="btn-download-header" class="btn-icon btn-download-mini" title="Descargar este recurso HTML autocontenido">
+            <span>⬇</span>
+            <span>Descargar HTML</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="progress-section" aria-label="Progreso de estructuras dominadas">
+        <div class="progress-track">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <div class="progress-label" id="progress-label">0 / 10 dominadas</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================
+       CONTENIDO PRINCIPAL: DIAGRAMA VECTORIAL EDITORIAL + TARJETA FISIOLÓGICA
+       ======================================================================== -->
+  <main class="main-container">
+
+    <!-- COLUMNA 1: DIAGRAMA CORONAL EN SVG DE ALTA PRECISIÓN -->
+    <section class="card diagram-card" aria-label="Diagrama anatómico interactivo del corazón">
+      <div class="diagram-header">
+        <div class="diagram-title">
+          <span>Corte Coronal Anatómico · Flujo Hemodinámico</span>
+        </div>
+        <div class="legend-group">
+          <div class="legend-item">
+            <span class="dot-deoxy"></span>
+            <span>Venosa (CO₂)</span>
+          </div>
+          <div class="legend-item">
+            <span class="dot-oxy"></span>
+            <span>Arterial (O₂)</span>
+          </div>
+          <div class="legend-item">
+            <span class="dot-valve"></span>
+            <span>Aparato Valvular</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="svg-stage">
+        <!-- Diagrama Anatómico Coronal Vectorial Editorial (viewBox 0 0 560 600) -->
+        <svg id="heart-svg" viewBox="0 0 560 600" role="img" aria-label="Corte coronal detallado del corazón humano con 10 estructuras interactivas">
+          <defs>
+            <!-- Gradientes 3D para vasos venosos (desoxigenados) -->
+            <linearGradient id="grad-deoxy-vessel" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#1e40af" />
+              <stop offset="35%" stop-color="#3b82f6" />
+              <stop offset="75%" stop-color="#2563eb" />
+              <stop offset="100%" stop-color="#172554" />
+            </linearGradient>
+
+            <linearGradient id="grad-deoxy-lumen" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#1d4ed8" />
+              <stop offset="55%" stop-color="#1e3a8a" />
+              <stop offset="100%" stop-color="#172554" />
+            </linearGradient>
+
+            <!-- Gradientes 3D para vasos arteriales (oxigenados) -->
+            <linearGradient id="grad-oxy-vessel" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#9f1239" />
+              <stop offset="35%" stop-color="#f43f5e" />
+              <stop offset="75%" stop-color="#e11d48" />
+              <stop offset="100%" stop-color="#881337" />
+            </linearGradient>
+
+            <linearGradient id="grad-oxy-lumen" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#be123c" />
+              <stop offset="55%" stop-color="#9f1239" />
+              <stop offset="100%" stop-color="#701a2e" />
+            </linearGradient>
+
+            <!-- Gradientes de pared miocárdica y endocardio -->
+            <linearGradient id="grad-myocardium-wall" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#fda4af" />
+              <stop offset="45%" stop-color="#fb7185" />
+              <stop offset="100%" stop-color="#e11d48" />
+            </linearGradient>
+
+            <linearGradient id="grad-septum" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#f43f5e" />
+              <stop offset="50%" stop-color="#fda4af" />
+              <stop offset="100%" stop-color="#be123c" />
+            </linearGradient>
+
+            <linearGradient id="grad-pericardium" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#ffe4e6" />
+              <stop offset="100%" stop-color="#fecdd3" />
+            </linearGradient>
+
+            <linearGradient id="grad-valve-leaflet" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#ffffff" />
+              <stop offset="65%" stop-color="#f1f5f9" />
+              <stop offset="100%" stop-color="#cbd5e1" />
+            </linearGradient>
+
+            <!-- Sombra paralela suave para pines numerados -->
+            <filter id="pin-shadow" x="-35%" y="-35%" width="170%" height="170%">
+              <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#0f172a" flood-opacity="0.38" />
+            </filter>
+
+            <!-- Marcador de flecha de flujo -->
+            <marker id="arrow-flow" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="4.8" markerHeight="4.8" orient="auto-start-reverse">
+              <path d="M 0 1.2 L 9.5 5 L 0 8.8 z" fill="#ffffff" fill-opacity="0.92" />
+            </marker>
+          </defs>
+
+          <!-- Indicadores de orientación anatómica -->
+          <text x="18" y="24" font-size="11" font-weight="800" fill="#475569" letter-spacing="0.06em">DERECHA ANATÓMICA</text>
+          <text x="398" y="24" font-size="11" font-weight="800" fill="#475569" letter-spacing="0.06em">IZQUIERDA ANATÓMICA</text>
+
+          <!-- ==================================================================
+               CAPA 1: ANATOMÍA CARDÍACA Y GRANDES VASOS (CORTE CORONAL)
+               ================================================================== -->
+          <g class="heart-living-group" id="layer-anatomy">
+
+            <!-- 1. VENA CAVA SUPERIOR E INFERIOR (Troncos venosos posteriores) -->
+            <g class="anatomy-zone" data-id="1" tabindex="0" role="button" aria-label="1. Vena cava superior e inferior">
+              <!-- Vena cava superior -->
+              <path d="M 134 54 L 182 54 L 182 204 L 134 204 Z"
+                    fill="url(#grad-deoxy-vessel)" stroke="#172554" stroke-width="2.4" />
+              <!-- Luz superior de VCS -->
+              <ellipse cx="158" cy="54" rx="24" ry="7.5" fill="#60a5fa" stroke="#172554" stroke-width="2" />
+              <!-- Vena braquiocefálica tributaria -->
+              <path d="M 134 78 L 106 62 L 116 46 L 146 64 Z"
+                    fill="url(#grad-deoxy-vessel)" stroke="#172554" stroke-width="2" />
+              <!-- Vena cava inferior -->
+              <path d="M 138 386 L 184 386 L 184 532 L 138 532 Z"
+                    fill="url(#grad-deoxy-vessel)" stroke="#172554" stroke-width="2.4" />
+              <ellipse cx="161" cy="532" rx="23" ry="7" fill="#172554" />
+            </g>
+
+            <!-- 6. ARTERIAS PULMONARES (Rama derecha retroaórtica e izquierda) -->
+            <g class="anatomy-zone" data-id="6" tabindex="0" role="button" aria-label="6. Arterias pulmonares derecha e izquierda">
+              <!-- Arteria pulmonar derecha (pasa detrás de aorta ascendente y VCS) -->
+              <path d="M 255 128 L 96 134 L 96 164 L 255 158 Z"
+                    fill="url(#grad-deoxy-vessel)" stroke="#172554" stroke-width="2.2" />
+              <ellipse cx="96" cy="149" rx="6.5" ry="15" fill="#60a5fa" stroke="#172554" stroke-width="2" />
+              <!-- Arteria pulmonar izquierda -->
+              <path d="M 294 128 L 464 134 L 464 166 L 294 158 Z"
+                    fill="url(#grad-deoxy-vessel)" stroke="#172554" stroke-width="2.2" />
+              <ellipse cx="464" cy="150" rx="6.5" ry="16" fill="#60a5fa" stroke="#172554" stroke-width="2" />
+              <!-- Ramas lobares distales sugeridas -->
+              <path d="M 464 140 L 486 132 L 486 146 L 464 150 Z" fill="#2563eb" stroke="#172554" stroke-width="1.6" />
+              <path d="M 464 152 L 486 162 L 486 174 L 464 164 Z" fill="#1d4ed8" stroke="#172554" stroke-width="1.6" />
+            </g>
+
+            <!-- 7. VENAS PULMONARES (4 venas desembocando en aurícula izquierda) -->
+            <g class="anatomy-zone" data-id="7" tabindex="0" role="button" aria-label="7. Venas pulmonares">
+              <!-- Venas pulmonares derechas (trayecto posterior hacia AI) -->
+              <path d="M 92 206 L 134 202 L 134 220 L 92 224 Z" fill="url(#grad-oxy-vessel)" stroke="#881337" stroke-width="1.8" />
+              <path d="M 92 234 L 134 230 L 134 248 L 92 252 Z" fill="url(#grad-oxy-vessel)" stroke="#881337" stroke-width="1.8" />
+              <!-- Venas pulmonares izquierdas superior e inferior -->
+              <path d="M 412 204 L 488 190 L 491 214 L 416 228 Z"
+                    fill="url(#grad-oxy-vessel)" stroke="#881337" stroke-width="2.2" />
+              <path d="M 418 240 L 492 236 L 492 260 L 418 264 Z"
+                    fill="url(#grad-oxy-vessel)" stroke="#881337" stroke-width="2.2" />
+              <ellipse cx="489" cy="202" rx="5.5" ry="12" fill="#fda4af" stroke="#881337" stroke-width="1.8" />
+              <ellipse cx="492" cy="248" rx="5.5" ry="12" fill="#fda4af" stroke="#881337" stroke-width="1.8" />
+            </g>
+
+            <!-- SILUETA EXTERNA: PERICARDIO Y MIOCARDIO ASIMÉTRICO REALISTA -->
+            <!-- Envoltura pericárdica externa sutil -->
+            <path d="M 156 192
+                     C 86 205, 58 278, 74 356
+                     C 92 444, 178 526, 314 556
+                     C 376 570, 448 510, 466 420
+                     C 484 330, 464 236, 412 198
+                     Z"
+                  fill="url(#grad-pericardium)" stroke="#be123c" stroke-width="2.2" />
+
+            <!-- Masa muscular del miocardio (pared delgada en VD ~4mm, pared gruesa en VI ~14mm) -->
+            <path d="M 162 196
+                     C 94 210, 66 280, 82 354
+                     C 99 438, 182 518, 312 548
+                     C 370 561, 440 504, 458 416
+                     C 475 330, 456 240, 408 202
+                     Z"
+                  fill="url(#grad-myocardium-wall)" stroke="#9f1239" stroke-width="2.6" />
+
+            <!-- Orejuela izquierda (Auriculilla) visible en borde superior izquierdo -->
+            <path d="M 382 196 C 414 176, 446 188, 436 214 C 428 232, 406 226, 392 216 Z"
+                  fill="#e11d48" stroke="#881337" stroke-width="2" />
+
+            <!-- 2. AURÍCULA DERECHA (Atrio derecho + músculos pectíneos + seno coronario) -->
+            <g class="anatomy-zone" data-id="2" tabindex="0" role="button" aria-label="2. Aurícula derecha">
+              <path d="M 122 198
+                       C 92 228, 90 302, 124 348
+                       L 196 334
+                       C 204 290, 202 232, 184 198 Z"
+                    fill="url(#grad-deoxy-lumen)" stroke="#93c5fd" stroke-width="2" />
+              <!-- Relieve de músculos pectíneos en pared auricular -->
+              <path d="M 106 238 Q 124 246 112 262 M 102 268 Q 122 276 110 294 M 106 298 Q 124 306 116 322"
+                    fill="none" stroke="#3b82f6" stroke-width="2.2" stroke-linecap="round" opacity="0.7" />
+              <!-- Ostium del seno coronario -->
+              <ellipse cx="176" cy="316" rx="7" ry="5" fill="#0f172a" stroke="#60a5fa" stroke-width="1.5" />
+            </g>
+
+            <!-- 4. VENTRÍCULO DERECHO (Pared delgada, trabéculas carnosas, banda moderadora) -->
+            <g class="anatomy-zone" data-id="4" tabindex="0" role="button" aria-label="4. Ventrículo derecho">
+              <!-- Cavidad ventricular derecha (pared externa delgada) -->
+              <path d="M 118 352
+                       C 118 424, 184 484, 276 508
+                       C 264 432, 256 350, 260 258
+                       L 228 258
+                       L 196 336 Z"
+                    fill="url(#grad-deoxy-lumen)" stroke="#93c5fd" stroke-width="2" />
+              <!-- Trabéculas carnosas en pared libre y ápex derecho -->
+              <path d="M 126 392 Q 144 405 134 422 Q 154 435 148 452 Q 172 465 174 478"
+                    fill="none" stroke="#2563eb" stroke-width="4" stroke-linecap="round" opacity="0.75" />
+              <path d="M 192 482 Q 214 472 224 492 Q 242 482 254 498"
+                    fill="none" stroke="#2563eb" stroke-width="4" stroke-linecap="round" opacity="0.75" />
+              <!-- Músculos papilares derechos (anterior y posterior) -->
+              <path d="M 152 448 C 156 422, 166 412, 172 414 C 178 416, 174 438, 168 456 Z"
+                    fill="#3b82f6" stroke="#1e3a8a" stroke-width="1.6" />
+              <path d="M 204 474 C 204 446, 212 432, 218 434 C 224 436, 222 456, 218 480 Z"
+                    fill="#3b82f6" stroke="#1e3a8a" stroke-width="1.6" />
+            </g>
+
+            <!-- TABIQUE INTERVENTRICULAR (Porción muscular gruesa + porción membranosa) -->
+            <path d="M 260 264
+                     C 256 352, 266 436, 282 512
+                     L 310 516
+                     C 294 436, 286 350, 290 264 Z"
+                  fill="url(#grad-septum)" stroke="#881337" stroke-width="2.2" />
+
+            <!-- 9. VENTRÍCULO IZQUIERDO (Pared miocárdica 3x más gruesa + trabéculas + papilares) -->
+            <g class="anatomy-zone" data-id="9" tabindex="0" role="button" aria-label="9. Ventrículo izquierdo">
+              <!-- Cavidad ventricular izquierda (deja ver el enorme grosor parietal de 12-15 mm a la derecha) -->
+              <path d="M 292 262
+                       L 334 328
+                       L 402 336
+                       C 416 402, 384 478, 314 508
+                       C 296 432, 288 348, 292 262 Z"
+                    fill="url(#grad-oxy-lumen)" stroke="#fda4af" stroke-width="2" />
+              <!-- Trabéculas carnosas prominentes en pared libre izquierda -->
+              <path d="M 402 362 Q 384 376 396 394 Q 376 410 388 428 Q 368 446 376 462"
+                    fill="none" stroke="#e11d48" stroke-width="4.5" stroke-linecap="round" opacity="0.8" />
+              <path d="M 322 496 Q 338 480 350 494 Q 362 476 374 484"
+                    fill="none" stroke="#e11d48" stroke-width="4.5" stroke-linecap="round" opacity="0.8" />
+              <!-- Músculos papilares izquierdos robustos (anterolateral y posteromedial) -->
+              <path d="M 332 478 C 334 442, 342 422, 350 424 C 358 426, 354 452, 348 484 Z"
+                    fill="#f43f5e" stroke="#881337" stroke-width="1.8" />
+              <path d="M 378 456 C 372 422, 378 404, 386 406 C 394 408, 394 434, 390 462 Z"
+                    fill="#f43f5e" stroke="#881337" stroke-width="1.8" />
+            </g>
+
+            <!-- 8. AURÍCULA IZQUIERDA + VÁLVULA MITRAL (BICÚSPIDE) Y CUERDAS TENDINOSAS -->
+            <g class="anatomy-zone" data-id="8" tabindex="0" role="button" aria-label="8. Aurícula izquierda y válvula mitral">
+              <!-- Cavidad de Aurícula Izquierda -->
+              <path d="M 324 202
+                       L 408 202
+                       C 430 238, 430 296, 408 332
+                       L 334 326
+                       C 322 288, 320 242, 324 202 Z"
+                    fill="url(#grad-oxy-lumen)" stroke="#fda4af" stroke-width="2" />
+              <!-- Valvas de la Válvula Mitral (Anterior y Posterior) -->
+              <path d="M 334 326 C 344 348, 354 362, 360 368"
+                    fill="none" stroke="url(#grad-valve-leaflet)" stroke-width="6.5" stroke-linecap="round" />
+              <path d="M 408 332 C 394 352, 382 364, 374 368"
+                    fill="none" stroke="url(#grad-valve-leaflet)" stroke-width="6.5" stroke-linecap="round" />
+              <!-- Cuerdas tendinosas conectando valvas mitrales con músculos papilares izquierdos -->
+              <line x1="356" y1="366" x2="348" y2="424" stroke="#f8fafc" stroke-width="1.8" />
+              <line x1="360" y1="368" x2="352" y2="426" stroke="#f8fafc" stroke-width="1.8" />
+              <line x1="374" y1="368" x2="384" y2="406" stroke="#f8fafc" stroke-width="1.8" />
+              <line x1="378" y1="365" x2="388" y2="408" stroke="#f8fafc" stroke-width="1.8" />
+            </g>
+
+            <!-- 3. VÁLVULA TRICÚSPIDE Y CUERDAS TENDINOSAS DERECHAS -->
+            <g class="anatomy-zone" data-id="3" tabindex="0" role="button" aria-label="3. Válvula tricúspide">
+              <!-- Anillo fibroso y valvas tricúspides -->
+              <path d="M 124 348 C 138 368, 152 380, 160 384"
+                    fill="none" stroke="url(#grad-valve-leaflet)" stroke-width="6.5" stroke-linecap="round" />
+              <path d="M 196 334 C 186 356, 178 372, 174 382"
+                    fill="none" stroke="url(#grad-valve-leaflet)" stroke-width="6.5" stroke-linecap="round" />
+              <!-- Cuerdas tendinosas hacia músculos papilares derechos -->
+              <line x1="158" y1="382" x2="164" y2="414" stroke="#f8fafc" stroke-width="1.8" />
+              <line x1="162" y1="384" x2="170" y2="414" stroke="#f8fafc" stroke-width="1.8" />
+              <line x1="174" y1="382" x2="212" y2="434" stroke="#f8fafc" stroke-width="1.8" />
+              <line x1="177" y1="380" x2="218" y2="434" stroke="#f8fafc" stroke-width="1.8" />
+            </g>
+
+            <!-- 5. VÁLVULA SEMILUNAR PULMONAR Y TRONCO PULMONAR -->
+            <g class="anatomy-zone" data-id="5" tabindex="0" role="button" aria-label="5. Válvula pulmonar y tronco pulmonar">
+              <!-- Tronco pulmonar emergiendo del infundíbulo derecho -->
+              <path d="M 228 258
+                       C 228 192, 238 126, 274 126
+                       C 308 126, 308 184, 294 256 Z"
+                    fill="url(#grad-deoxy-vessel)" stroke="#172554" stroke-width="2.4" />
+              <!-- Cúspides semilunares de la válvula pulmonar -->
+              <path d="M 230 256 Q 246 238 261 256 Q 277 238 293 256"
+                    fill="none" stroke="#ffffff" stroke-width="5.5" stroke-linecap="round" />
+            </g>
+
+            <!-- 10. ARTERIA AORTA, VÁLVULA AÓRTICA, SENOS DE VALSALVA Y TRONCOS SUPRAAÓRTICOS -->
+            <g class="anatomy-zone" data-id="10" tabindex="0" role="button" aria-label="10. Arteria aorta y válvula aórtica">
+              <!-- Troncos supraaórticos: Tronco braquiocefálico, Carótida común izq., Subclavia izq. -->
+              <path d="M 232 82 L 232 40 L 254 40 L 254 80 Z"
+                    fill="url(#grad-oxy-vessel)" stroke="#881337" stroke-width="2" />
+              <ellipse cx="243" cy="40" rx="11" ry="4" fill="#fda4af" stroke="#881337" stroke-width="1.5" />
+
+              <path d="M 268 74 L 268 36 L 288 36 L 288 74 Z"
+                    fill="url(#grad-oxy-vessel)" stroke="#881337" stroke-width="2" />
+              <ellipse cx="278" cy="36" rx="10" ry="3.8" fill="#fda4af" stroke="#881337" stroke-width="1.5" />
+
+              <path d="M 302 80 L 302 42 L 322 42 L 322 86 Z"
+                    fill="url(#grad-oxy-vessel)" stroke="#881337" stroke-width="2" />
+              <ellipse cx="312" cy="42" rx="10" ry="3.8" fill="#fda4af" stroke="#881337" stroke-width="1.5" />
+
+              <!-- Aorta ascendente, cayado aórtico y aorta descendente torácica -->
+              <path d="M 266 262
+                       C 266 184, 206 144, 206 102
+                       C 206 60, 342 56, 354 114
+                       C 362 152, 362 198, 362 224
+                       L 320 224
+                       C 320 184, 318 124, 282 118
+                       C 252 114, 304 184, 306 262 Z"
+                    fill="url(#grad-oxy-vessel)" stroke="#881337" stroke-width="2.5" />
+
+              <!-- Ligamento arterioso (entre concavidad del cayado aórtico y arteria pulmonar izq.) -->
+              <path d="M 314 118 L 318 134" stroke="#cbd5e1" stroke-width="4.5" stroke-linecap="round" />
+
+              <!-- Válvula semilunar aórtica con senos de Valsalva -->
+              <path d="M 267 260 Q 286 242 305 260"
+                    fill="none" stroke="#ffffff" stroke-width="5.5" stroke-linecap="round" />
+            </g>
+
+            <!-- VASOS CORONARIOS EPICÁRDICOS SUTILES (Profundidad anatómica en surco IV anterior) -->
+            <g pointer-events="none" opacity="0.88">
+              <!-- Arteria coronaria izquierda / Descendente anterior (DA) -->
+              <path d="M 274 266 C 272 325, 282 395, 294 495"
+                    fill="none" stroke="#f43f5e" stroke-width="3" stroke-linecap="round" />
+              <path d="M 277 338 C 296 355, 312 372, 324 388"
+                    fill="none" stroke="#f43f5e" stroke-width="2" stroke-linecap="round" />
+              <!-- Vena cardíaca magna paralela -->
+              <path d="M 268 274 C 266 332, 275 402, 287 492"
+                    fill="none" stroke="#3b82f6" stroke-width="2.2" stroke-linecap="round" />
+            </g>
+
+            <!-- FLECHAS ANIMADAS DE DIRECCIÓN DEL FLUJO SANGUÍNEO (Suaves, sin tapar pines) -->
+            <g pointer-events="none">
+              <!-- Circuito venoso derecho -->
+              <path class="flow-arrow" d="M 158 126 L 158 205" stroke="#ffffff" stroke-width="2.3" fill="none" marker-end="url(#arrow-flow)" />
+              <path class="flow-arrow" d="M 161 504 L 161 428" stroke="#ffffff" stroke-width="2.3" fill="none" marker-end="url(#arrow-flow)" />
+              <path class="flow-arrow" d="M 152 308 L 178 392" stroke="#ffffff" stroke-width="2.3" fill="none" marker-end="url(#arrow-flow)" />
+              <path class="flow-arrow" d="M 226 392 L 254 205" stroke="#ffffff" stroke-width="2.3" fill="none" marker-end="url(#arrow-flow)" />
+
+              <!-- Circuito arterial izquierdo -->
+              <path class="flow-arrow" d="M 455 215 L 408 232" stroke="#ffffff" stroke-width="2.3" fill="none" marker-end="url(#arrow-flow)" />
+              <path class="flow-arrow" d="M 368 292 L 364 382" stroke="#ffffff" stroke-width="2.3" fill="none" marker-end="url(#arrow-flow)" />
+              <path class="flow-arrow" d="M 322 385 L 288 228" stroke="#ffffff" stroke-width="2.3" fill="none" marker-end="url(#arrow-flow)" />
+            </g>
+          </g>
+
+          <!-- ==================================================================
+               CAPA 2 (#layer-pins): TODOS LOS MARCADORES NUMERADOS AL FINAL DEL SVG
+               Garantiza visibilidad absoluta en primer plano sobre vasos y flechas.
+               ================================================================== -->
+          <g id="layer-pins">
+            <!-- Pin 1: Vena Cava Superior -->
+            <g class="pin-marker" data-id="1" tabindex="0" role="button" aria-label="Pin 1: Vena cava superior e inferior" filter="url(#pin-shadow)">
+              <circle class="pin-pulse-ring" cx="158" cy="96" r="16" fill="none" stroke="#f59e0b" stroke-width="3" />
+              <circle class="pin-bg" cx="158" cy="96" r="15.5" fill="#ffffff" stroke="#1d4ed8" stroke-width="3" />
+              <text class="pin-text" x="158" y="101.5" text-anchor="middle" font-size="13.5" font-weight="900" fill="#1d4ed8">1</text>
+            </g>
+
+            <!-- Pin 2: Aurícula Derecha -->
+            <g class="pin-marker" data-id="2" tabindex="0" role="button" aria-label="Pin 2: Aurícula derecha" filter="url(#pin-shadow)">
+              <circle class="pin-pulse-ring" cx="144" cy="264" r="16" fill="none" stroke="#f59e0b" stroke-width="3" />
+              <circle class="pin-bg" cx="144" cy="264" r="15.5" fill="#ffffff" stroke="#1d4ed8" stroke-width="3" />
+              <text class="pin-text" x="144" y="269.5" text-anchor="middle" font-size="13.5" font-weight="900" fill="#1d4ed8">2</text>
+            </g>
+
+            <!-- Pin 3: Válvula Tricúspide -->
+            <g class="pin-marker" data-id="3" tabindex="0" role="button" aria-label="Pin 3: Válvula tricúspide" filter="url(#pin-shadow)">
+              <circle class="pin-pulse-ring" cx="162" cy="356" r="16" fill="none" stroke="#f59e0b" stroke-width="3" />
+              <circle class="pin-bg" cx="162" cy="356" r="15.5" fill="#ffffff" stroke="#0f766e" stroke-width="3" />
+              <text class="pin-text" x="162" y="361.5" text-anchor="middle" font-size="13.5" font-weight="900" fill="#0f766e">3</text>
+            </g>
+
+            <!-- Pin 4: Ventrículo Derecho -->
+            <g class="pin-marker" data-id="4" tabindex="0" role="button" aria-label="Pin 4: Ventrículo derecho" filter="url(#pin-shadow)">
+              <circle class="pin-pulse-ring" cx="198" cy="436" r="16" fill="none" stroke="#f59e0b" stroke-width="3" />
+              <circle class="pin-bg" cx="198" cy="436" r="15.5" fill="#ffffff" stroke="#1d4ed8" stroke-width="3" />
+              <text class="pin-text" x="198" y="441.5" text-anchor="middle" font-size="13.5" font-weight="900" fill="#1d4ed8">4</text>
+            </g>
+
+            <!-- Pin 5: Válvula Pulmonar / Tronco Pulmonar -->
+            <g class="pin-marker" data-id="5" tabindex="0" role="button" aria-label="Pin 5: Válvula pulmonar y tronco pulmonar" filter="url(#pin-shadow)">
+              <circle class="pin-pulse-ring" cx="256" cy="242" r="16" fill="none" stroke="#f59e0b" stroke-width="3" />
+              <circle class="pin-bg" cx="256" cy="242" r="15.5" fill="#ffffff" stroke="#0f766e" stroke-width="3" />
+              <text class="pin-text" x="256" y="247.5" text-anchor="middle" font-size="13.5" font-weight="900" fill="#0f766e">5</text>
+            </g>
+
+            <!-- Pin 6: Arteria Pulmonar Izquierda -->
+            <g class="pin-marker" data-id="6" tabindex="0" role="button" aria-label="Pin 6: Arterias pulmonares" filter="url(#pin-shadow)">
+              <circle class="pin-pulse-ring" cx="412" cy="148" r="16" fill="none" stroke="#f59e0b" stroke-width="3" />
+              <circle class="pin-bg" cx="412" cy="148" r="15.5" fill="#ffffff" stroke="#1d4ed8" stroke-width="3" />
+              <text class="pin-text" x="412" y="153.5" text-anchor="middle" font-size="13.5" font-weight="900" fill="#1d4ed8">6</text>
+            </g>
+
+            <!-- Pin 7: Venas Pulmonares -->
+            <g class="pin-marker" data-id="7" tabindex="0" role="button" aria-label="Pin 7: Venas pulmonares" filter="url(#pin-shadow)">
+              <circle class="pin-pulse-ring" cx="458" cy="226" r="16" fill="none" stroke="#f59e0b" stroke-width="3" />
+              <circle class="pin-bg" cx="458" cy="226" r="15.5" fill="#ffffff" stroke="#be123c" stroke-width="3" />
+              <text class="pin-text" x="458" y="231.5" text-anchor="middle" font-size="13.5" font-weight="900" fill="#be123c">7</text>
+            </g>
+
+            <!-- Pin 8: Aurícula Izquierda y Válvula Mitral -->
+            <g class="pin-marker" data-id="8" tabindex="0" role="button" aria-label="Pin 8: Aurícula izquierda y válvula mitral" filter="url(#pin-shadow)">
+              <circle class="pin-pulse-ring" cx="372" cy="272" r="16" fill="none" stroke="#f59e0b" stroke-width="3" />
+              <circle class="pin-bg" cx="372" cy="272" r="15.5" fill="#ffffff" stroke="#be123c" stroke-width="3" />
+              <text class="pin-text" x="372" y="277.5" text-anchor="middle" font-size="13.5" font-weight="900" fill="#be123c">8</text>
+            </g>
+
+            <!-- Pin 9: Ventrículo Izquierdo -->
+            <g class="pin-marker" data-id="9" tabindex="0" role="button" aria-label="Pin 9: Ventrículo izquierdo" filter="url(#pin-shadow)">
+              <circle class="pin-pulse-ring" cx="352" cy="432" r="16" fill="none" stroke="#f59e0b" stroke-width="3" />
+              <circle class="pin-bg" cx="352" cy="432" r="15.5" fill="#ffffff" stroke="#be123c" stroke-width="3" />
+              <text class="pin-text" x="352" y="437.5" text-anchor="middle" font-size="13.5" font-weight="900" fill="#be123c">9</text>
+            </g>
+
+            <!-- Pin 10: Válvula Aórtica y Arco Aórtico -->
+            <g class="pin-marker" data-id="10" tabindex="0" role="button" aria-label="Pin 10: Arteria aorta y válvula aórtica" filter="url(#pin-shadow)">
+              <circle class="pin-pulse-ring" cx="282" cy="92" r="16" fill="none" stroke="#f59e0b" stroke-width="3" />
+              <circle class="pin-bg" cx="282" cy="92" r="15.5" fill="#ffffff" stroke="#be123c" stroke-width="3" />
+              <text class="pin-text" x="282" y="97" text-anchor="middle" font-size="12.5" font-weight="900" fill="#be123c">10</text>
+            </g>
+          </g>
+        </svg>
+      </div>
+
+      <!-- Barra de acceso rápido móvil cuando el drawer está cerrado -->
+      <div class="mobile-open-bar" id="mobile-open-bar">
+        <span id="mobile-bar-title">1. Venas cavas (Sup. e Inf.)</span>
+        <button type="button" class="btn-open-drawer" id="btn-open-drawer">Ver ficha y pregunta</button>
+      </div>
+
+      <!-- Selector Táctil de 10 Estructuras -->
+      <div>
+        <div class="quick-nav-label">Índice Anatómico (Toca un pin en el corazón o selecciona aquí):</div>
+        <div class="structure-pills" id="structure-pills" role="list"></div>
+      </div>
+    </section>
+
+    <!-- BACKDROP PARA DRAWER MÓVIL (z-index: 950) -->
+    <div class="drawer-backdrop" id="drawer-backdrop" aria-hidden="true"></div>
+
+    <!-- COLUMNA 2 / DRAWER MÓVIL: FICHA FISIOLÓGICA Y MICRO-EVALUACIÓN (z-index: 1000) -->
+    <section class="card detail-card" id="detail-card" aria-live="polite">
+      <!-- Cabecera táctil visible en pantallas < 900px con botón de cierre de 48px -->
+      <div>
+        <div class="drawer-drag-pill" aria-hidden="true"></div>
+        <div class="drawer-mobile-header">
+          <span class="drawer-header-label">Ficha Anatómica y Fisiológica</span>
+          <button type="button" class="btn-close-drawer" id="btn-close-drawer" aria-label="Cerrar tarjeta de detalle">
+            <span>✕</span>
+            <span>Cerrar</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="meta-badges" id="detail-badges"></div>
+
+      <div class="structure-heading">
+        <h2 id="detail-title">Cargando estructura...</h2>
+        <div class="latin-name" id="detail-latin">Terminologia Anatomica</div>
+      </div>
+
+      <div class="hemo-grid" id="detail-hemo"></div>
+
+      <div class="physio-body" id="detail-description"></div>
+
+      <!-- Micro-Pregunta de Verificación -->
+      <div class="quiz-box" id="quiz-box">
+        <div class="quiz-header">
+          <span class="quiz-tag">Verificación Fisiológica</span>
+          <span class="quiz-status-text" id="quiz-status">Pendiente</span>
+        </div>
+        <div class="quiz-question" id="quiz-question"></div>
+        <div class="quiz-options" id="quiz-options"></div>
+        <div class="feedback-panel" id="quiz-feedback"></div>
+      </div>
+
+      <div class="nav-footer">
+        <button type="button" class="btn-nav" id="btn-prev">← Anterior</button>
+        <button type="button" class="btn-nav primary" id="btn-next">Siguiente estructura →</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- ========================================================================
+       MODAL FINAL DE LOGRO Y DESCARGA OFFLINE (z-index: 9999)
+       ======================================================================== -->
+  <div class="modal-overlay" id="achievement-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-card">
+      <div class="trophy-circle" aria-hidden="true">🏆</div>
+      <h2 id="modal-title">¡Recorrido Cardíaco Completado!</h2>
+      <p>Has identificado las 10 estructuras anatómicas fundamentales y validado sus principios hemodinámicos de primer año.</p>
+
+      <div class="stats-row">
+        <div class="stat-item">
+          <strong id="stat-mastered">10/10</strong>
+          <span>Estructuras</span>
+        </div>
+        <div class="stat-item">
+          <strong id="stat-accuracy">100%</strong>
+          <span>Precisión 1er Intento</span>
+        </div>
+        <div class="stat-item">
+          <strong>2 Circuitos</strong>
+          <span>Menor y Mayor</span>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-modal-primary" id="btn-download-modal">
+          ⬇ Descargar archivo HTML completo (.html)
+        </button>
+        <button type="button" class="btn-modal-secondary" id="btn-restart">
+          ↻ Reiniciar exploración desde cero
+        </button>
+        <button type="button" class="btn-modal-secondary" id="btn-close-modal">
+          Continuar revisando el atlas
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast de notificación (z-index: 10500) -->
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <!-- ========================================================================
+       LÓGICA DE APLICACIÓN, CURRÍCULO FISIOLÓGICO Y SÍNTESIS DE AUDIO
+       ======================================================================== -->
+  <script>
+    (function () {
+      "use strict";
+
+      /* ----------------------------------------------------------------------
+         1. CURRÍCULO RIGUROSO DE ANATOMÍA Y FISIOLOGÍA CARDÍACA (10 ESTRUCTURAS)
+         ---------------------------------------------------------------------- */
+      const STRUCTURES = [
+        {
+          id: 1,
+          shortName: "Venas cavas (Sup. e Inf.)",
+          title: "Vena Cava Superior y Vena Cava Inferior",
+          latin: "Vena cava superior et Vena cava inferior",
+          category: "Gran Vaso · Retorno Venoso",
+          bloodType: "deoxy",
+          bloodLabel: "Sangre Desoxigenada (SatO₂ ~75%)",
+          pressure: "0 – 4 mmHg (PVC)",
+          cyclePhase: "Llenado continuo (sístole y diástole)",
+          description:
+            "Son los dos grandes troncos venosos de capacitancia que drenan el retorno venoso sistémico hacia la aurícula derecha. La <strong>vena cava superior</strong> recoge sangre de cabeza, cuello, miembros superiores y pared torácica (vía ácigos), mientras que la <strong>vena cava inferior</strong> drena el territorio infradiafragmático. Carecen de válvulas verdaderas en su desembocadura (salvo la válvula rudimentaria de Eustaquio en la VCI), por lo que las ondas de presión auricular se transmiten retrógradamente al pulso venoso yugular.",
+          question:
+            "¿Qué determinante hemodinámico impulsa principalmente el retorno sanguíneo desde las venas cavas hacia la aurícula derecha en reposo?",
+          options: [
+            "El gradiente entre la presión media de llenado sistémico (~7 mmHg) y la presión auricular derecha (~0-2 mmHg)",
+            "La contracción peristáltica activa de la túnica media muscular de ambas venas cavas",
+            "Una presión hidrostática venosa central superior a 45 mmHg"
+          ],
+          correctIndex: 0,
+          explanation:
+            "Correcto. El retorno venoso depende del gradiente de presión entre los lechos venosos periféricos (presión media de llenado sistémico) y la aurícula derecha, asistido por la bomba muscular esquelética y la bomba respiratoria."
+        },
+        {
+          id: 2,
+          shortName: "Aurícula derecha",
+          title: "Aurícula Derecha (Atrio Derecho)",
+          latin: "Atrium dextrum",
+          category: "Cámara Cardíaca · Receptora",
+          bloodType: "deoxy",
+          bloodLabel: "Sangre Desoxigenada (SatO₂ ~75%)",
+          pressure: "2 – 6 mmHg (media ~3 mmHg)",
+          cyclePhase: "Reservorio en sístole / Bomba en telediástole",
+          description:
+            "Recibe sangre venosa de las venas cavas superior e inferior y del <strong>seno coronario</strong> (drenaje venoso del propio miocardio). En la pared posterolateral, cerca de la desembocadura de la vena cava superior, aloja al <strong>nodo sinoauricular (SA)</strong>, el marcapasos fisiológico del corazón. Su contracción (onda <em>a</em> del pulso venoso) aporta aproximadamente el 20% final del volumen telediastólico del ventrículo derecho.",
+          question:
+            "Además de ambas venas cavas, ¿qué estructura venosa esencial desemboca directamente en la aurícula derecha?",
+          options: [
+            "Las cuatro venas pulmonares",
+            "El seno coronario, que recoge el drenaje venoso del miocardio",
+            "La vena ácigos de forma independiente a la vena cava superior"
+          ],
+          correctIndex: 1,
+          explanation:
+            "Exacto. El seno coronario desemboca entre el orificio de la vena cava inferior y el ostium auriculoventricular derecho, devolviendo sangre desoxigenada procedente de la circulación coronaria."
+        },
+        {
+          id: 3,
+          shortName: "Válvula tricúspide",
+          title: "Válvula Tricúspide (Auriculoventricular Derecha)",
+          latin: "Valva atrioventricularis dextra (tricuspidalis)",
+          category: "Válvula Cardíaca · AV",
+          bloodType: "valve",
+          bloodLabel: "Flujo Unidireccional Derecho",
+          pressure: "Gradiente transvalvular < 2 mmHg",
+          cyclePhase: "Abierta en diástole / Cerrada en sístole",
+          description:
+            "Compuesta por tres valvas (anterior, posterior y septal) ancladas al anillo fibroso derecho. Sus bordes libres se unen mediante <strong>cuerdas tendinosas</strong> a los <strong>músculos papilares</strong> del ventrículo derecho. Durante la sístole ventricular, la contracción papilar tensa las cuerdas tendinosas para evitar el prolapso valvular hacia la aurícula derecha. Su cierre contribuye al primer ruido cardíaco (<strong>R1</strong>).",
+          question:
+            "¿Cuál es la función fisiológica específica de los músculos papilares y las cuerdas tendinosas durante la sístole ventricular?",
+          options: [
+            "Tirar de las valvas para abrir activamente la válvula durante el llenado rápido",
+            "Impedir la eversión o prolapso de las valvas hacia la aurícula derecha ante el aumento de presión ventricular",
+            "Generar el impulso eléctrico que despolariza el tabique interventricular"
+          ],
+          correctIndex: 1,
+          explanation:
+            "Muy bien. Las válvulas se abren y cierran pasivamente por gradientes de presión; los músculos papilares evitan que las valvas se abomben hacia atrás (prolapso) durante la eyección sistólica."
+        },
+        {
+          id: 4,
+          shortName: "Ventrículo derecho",
+          title: "Ventrículo Derecho",
+          latin: "Ventriculus dexter",
+          category: "Cámara Cardíaca · Bomba Pulmonar",
+          bloodType: "deoxy",
+          bloodLabel: "Sangre Desoxigenada (SatO₂ ~75%)",
+          pressure: "25 / 4 mmHg (Sistólica / Telediastólica)",
+          cyclePhase: "Eyección hacia circulación menor",
+          description:
+            "Cámara de morfología semilunar que envuelve parcialmente al ventrículo izquierdo. Posee una pared miocárdica delgada (3–5 mm) en comparación con el ventrículo izquierdo porque bombea hacia el <strong>circuito pulmonar de baja resistencia</strong>. Eyeccta exactamente el mismo volumen sistólico (~70 mL en reposo) que el ventrículo izquierdo, pero generando una presión sistólica ~5 veces menor (~25 mmHg).",
+          question:
+            "En condiciones fisiológicas normales, ¿cómo se compara el gasto cardíaco del ventrículo derecho respecto al del ventrículo izquierdo?",
+          options: [
+            "Es igual (~5 L/min), aunque genera presiones sistólicas mucho menores debido a la baja resistencia vascular pulmonar",
+            "Es aproximadamente un 20% menor porque el circuito pulmonar es más corto",
+            "Es mayor para compensar la pérdida de plasma en los capilares alveolares"
+          ],
+          correctIndex: 0,
+          explanation:
+            "Correcto. Ambos ventrículos operan en serie; por continuidad de flujo, el gasto cardíaco derecho e izquierdo son equivalentes (~5 L/min), diferenciándose en la poscarga (resistencia) que enfrentan."
+        },
+        {
+          id: 5,
+          shortName: "Válvula y tronco pulmonar",
+          title: "Válvula Semilunar Pulmonar y Tronco Pulmonar",
+          latin: "Valva trunci pulmonalis et Truncus pulmonalis",
+          category: "Válvula Sigmoidea · Tracto de Salida",
+          bloodType: "valve",
+          bloodLabel: "Tracto de Salida Derecho",
+          pressure: "Abre cuando P_VD > 8-10 mmHg",
+          cyclePhase: "Abierta en eyección / Cerrada en diástole",
+          description:
+            "Situada en el vértice del cono arterioso (infundíbulo) del ventrículo derecho, consta de tres cúspides semilunares sin cuerdas tendinosas. Se abre cuando la presión del ventrículo derecho supera la presión diastólica del tronco pulmonar (~8–10 mmHg). Su cierre al inicio de la relajación isovolumétrica genera el componente pulmonar (<strong>P2</strong>) del segundo ruido cardíaco (<strong>R2</strong>).",
+          question:
+            "¿Qué evento hemodinámico determina el cierre de la válvula semilunar pulmonar al final de la sístole?",
+          options: [
+            "La contracción del nodo auriculoventricular",
+            "La caída de la presión del ventrículo derecho por debajo de la presión del tronco pulmonar, generando reflujo hacia los senos valvulares",
+            "La tracción ejercida por las cuerdas tendinosas infundibulares"
+          ],
+          correctIndex: 1,
+          explanation:
+            "Exacto. Las válvulas semilunares carecen de aparato subvalvular; se cierran pasivamente en cuanto la presión arterial supera a la intraventricular al relajarse el miocardio."
+        },
+        {
+          id: 6,
+          shortName: "Arterias pulmonares",
+          title: "Arterias Pulmonares (Derecha e Izquierda)",
+          latin: "Arteriae pulmonales dextra et sinistra",
+          category: "Gran Vaso · Circulación Menor",
+          bloodType: "deoxy",
+          bloodLabel: "Sangre Desoxigenada (arterial funcional)",
+          pressure: "25 / 10 mmHg (Media ~15 mmHg)",
+          cyclePhase: "Conducción hacia capilares alveolares",
+          description:
+            "Nacen de la bifurcación del tronco pulmonar bajo el cayado aórtico (la derecha discurre por detrás de la aorta ascendente y la vena cava superior). Constituyen una excepción clásica: son <em>arterias</em> por su estructura histológica elástica y por alejarse del corazón, pero transportan <strong>sangre desoxigenada</strong> hacia los alvéolos para la hematosis. Ante la hipoxia alveolar, las arteriolas pulmonares sufren <em>vasoconstricción hipóxica</em>.",
+          question:
+            "¿Cómo responden las arteriolas pulmonares ante una disminución local de la presión parcial de oxígeno alveolar (hipoxia alveolar)?",
+          options: [
+            "Mediante vasodilatación intensa para aumentar el flujo hacia el alvéolo mal ventilado",
+            "Mediante vasoconstricción hipóxica, desviando la sangre hacia zonas pulmonares mejor ventiladas",
+            "Aumentando la permeabilidad al fibrinógeno"
+          ],
+          correctIndex: 1,
+          explanation:
+            "Correcto. A diferencia de las arteriolas sistémicas (que se dilatan ante hipoxia), las pulmonares se contraen (vasoconstricción hipóxica) para optimizar la relación ventilación/perfusión (V/Q)."
+        },
+        {
+          id: 7,
+          shortName: "Venas pulmonares",
+          title: "Venas Pulmonares (Superiores e Inferiores)",
+          latin: "Venae pulmonales dextrae et sinistrae",
+          category: "Gran Vaso · Retorno Pulmonar",
+          bloodType: "oxy",
+          bloodLabel: "Sangre Oxigenada (SatO₂ ~97-99%)",
+          pressure: "6 – 12 mmHg",
+          cyclePhase: "Retorno continuo a aurícula izquierda",
+          description:
+            "Habitualmente son cuatro (superior e inferior derechas; superior e inferior izquierdas) y desembocan en la pared posterior de la <strong>aurícula izquierda</strong>. Transportan <strong>sangre arterializada (rica en O₂)</strong> recién oxigenada en los capilares alveolares. Carecen de válvulas en su trayecto; el manguito de miocardio auricular que rodea su desembocadura actúa como un esfínter funcional durante la sístole auricular.",
+          question:
+            "¿Por qué se clasifican anatómicamente como 'venas' a pesar de transportar sangre con saturación de O₂ cercana al 98%?",
+          options: [
+            "Porque su túnica media es más gruesa que la de la aorta",
+            "Porque todo vaso que retorna sangre hacia las aurículas del corazón se define como vena",
+            "Porque poseen válvulas bicúspides cada 2 centímetros"
+          ],
+          correctIndex: 1,
+          explanation:
+            "Correcto. La nomenclatura vascular se basa en la dirección del flujo respecto al corazón (arterias = eferentes; venas = aferentes), no en el contenido de oxígeno."
+        },
+        {
+          id: 8,
+          shortName: "Aurícula izquierda y Mitral",
+          title: "Aurícula Izquierda y Válvula Mitral (Bicúspide)",
+          latin: "Atrium sinistrum et Valva mitralis",
+          category: "Cámara Receptora y Válvula AV Izq.",
+          bloodType: "oxy",
+          bloodLabel: "Sangre Oxigenada (SatO₂ ~98%)",
+          pressure: "6 – 12 mmHg (media ~8 mmHg)",
+          cyclePhase: "Llenado ventricular izquierdo en diástole",
+          description:
+            "La <strong>aurícula izquierda</strong> forma la base posterior del corazón, inmediatamente por delante del esófago, y recibe las cuatro venas pulmonares. Impulsa la sangre oxigenada hacia el ventrículo izquierdo a través de la <strong>válvula mitral (bicúspide)</strong>, dotada de dos valvas (anterior y posterior) ancladas mediante cuerdas tendinosas a dos potentes músculos papilares izquierdos.",
+          question:
+            "¿Qué estructura anatómica del mediastino posterior se relaciona íntimamente con la cara posterior de la aurícula izquierda (clave en ecocardiografía transesofágica)?",
+          options: [
+            "El esternón",
+            "El esófago torácico",
+            "El timo"
+          ],
+          correctIndex: 1,
+          explanation:
+            "Exacto. La estrecha relación posterior entre el esófago y la aurícula izquierda permite obtener imágenes cardíacas de altísima resolución mediante ecocardiografía transesofágica."
+        },
+        {
+          id: 9,
+          shortName: "Ventrículo izquierdo",
+          title: "Ventrículo Izquierdo",
+          latin: "Ventriculus sinister",
+          category: "Cámara Cardíaca · Bomba Sistémica",
+          bloodType: "oxy",
+          bloodLabel: "Sangre Oxigenada (SatO₂ ~98%)",
+          pressure: "120 / 8 mmHg (Sistólica / Telediastólica)",
+          cyclePhase: "Eyección sistémica de alta presión",
+          description:
+            "Cámara cónica que forma el <strong>ápex cardíaco</strong>. Como se aprecia en el corte coronal, su pared miocárdica es ~3 veces más gruesa (12–15 mm) que la del ventrículo derecho y posee trabéculas carnosas finas y dos músculos papilares robustos. Esta hipertrofia fisiológica le permite generar presiones sistólicas de ~120 mmHg para vencer la elevada resistencia vascular sistémica.",
+          question:
+            "¿Por qué la pared miocárdica del ventrículo izquierdo es aproximadamente tres veces más gruesa que la del ventrículo derecho?",
+          options: [
+            "Porque debe bombear el doble de volumen sanguíneo por minuto",
+            "Porque debe generar presiones sistólicas (~120 mmHg) cinco veces mayores para vencer la alta resistencia vascular sistémica (Ley de Laplace)",
+            "Porque carece de irrigación coronaria durante la diástole"
+          ],
+          correctIndex: 1,
+          explanation:
+            "Correcto. Según la ley de Laplace (T = P·r / 2h), el mayor espesor parietal (h) normaliza el estrés de pared ante las elevadas presiones sistémicas (~120 mmHg)."
+        },
+        {
+          id: 10,
+          shortName: "Aorta y Válvula aórtica",
+          title: "Arteria Aorta y Válvula Semilunar Aórtica",
+          latin: "Aorta et Valva aortae",
+          category: "Gran Vaso · Circulación Sistémica",
+          bloodType: "oxy",
+          bloodLabel: "Sangre Oxigenada (SatO₂ ~98%)",
+          pressure: "120 / 80 mmHg (Media ~93 mmHg)",
+          cyclePhase: "Eyección sistólica y efecto Windkessel diastólico",
+          description:
+            "La <strong>válvula aórtica</strong> posee tres cúspides semilunares; inmediatamente sobre ellas se hallan los <strong>senos de Valsalva</strong>, origen de las <strong>arterias coronarias</strong>. El arco aórtico emite el tronco braquiocefálico, la carótida común izquierda y la subclavia izquierda. Durante la diástole, el retroceso elástico de la aorta (<strong>efecto Windkessel</strong>) mantiene el flujo periférico y perfunde el miocardio coronario.",
+          question:
+            "¿En qué fase del ciclo cardíaco alcanza su máximo flujo la arteria coronaria izquierda y qué fenómeno aórtico lo impulsa?",
+          options: [
+            "Durante la contracción isovolumétrica, impulsado por la presión del ventrículo izquierdo",
+            "Durante la diástole ventricular, impulsado por el retroceso elástico de la aorta (efecto Windkessel) al relajarse el miocardio",
+            "Exclusivamente durante la sístole auricular"
+          ],
+          correctIndex: 1,
+          explanation:
+            "¡Excelente! Durante la sístole, la fuerte contracción del ventrículo izquierdo comprime los vasos intramiocárdicos; al relajarse en diástole, la presión diastólica aórtica (~80 mmHg) perfunde el miocardio."
+        }
+      ];
+
+      /* ----------------------------------------------------------------------
+         2. ESTADO DE LA APLICACIÓN
+         ---------------------------------------------------------------------- */
+      const state = {
+        currentId: 1,
+        completedIds: new Set(),
+        firstAttemptErrors: new Set(),
+        answeredMap: {}, // { [id]: { selectedIndex: number, isCorrect: boolean } }
+        isMuted: false,
+        modalShown: false,
+        drawerOpen: false
+      };
+
+      /* ----------------------------------------------------------------------
+         3. MOTOR DE SONIDO SINTETIZADO CON WEB AUDIO API (SIN ARCHIVOS EXTERNOS)
+         ---------------------------------------------------------------------- */
+      const SoundEngine = (() => {
+        let ctx = null;
+
+        function getContext() {
+          if (!ctx) {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (AudioCtx) {
+              ctx = new AudioCtx();
+            }
+          }
+          if (ctx && ctx.state === "suspended") {
+            ctx.resume().catch(() => {});
+          }
+          return ctx;
+        }
+
+        function playTone({ freq = 440, endFreq = null, duration = 0.12, type = "sine", gainVal = 0.14, delay = 0 }) {
+          if (state.isMuted) return;
+          const audio = getContext();
+          if (!audio) return;
+
+          try {
+            const now = audio.currentTime + delay;
+            const osc = audio.createOscillator();
+            const gain = audio.createGain();
+
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, now);
+            if (endFreq) {
+              osc.frequency.exponentialRampToValueAtTime(endFreq, now + duration);
+            }
+
+            gain.gain.setValueAtTime(0.0001, now);
+            gain.gain.exponentialRampToValueAtTime(gainVal, now + 0.015);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+            osc.connect(gain);
+            gain.connect(audio.destination);
+
+            osc.start(now);
+            osc.stop(now + duration + 0.02);
+          } catch (_) {
+            // Silencio seguro si el navegador restringe audio antes de gesto
+          }
+        }
+
+        return {
+          // Latido suave "lub-dub" al seleccionar estructura
+          select() {
+            playTone({ freq: 235, endFreq: 160, duration: 0.085, type: "triangle", gainVal: 0.12, delay: 0 });
+            playTone({ freq: 315, endFreq: 205, duration: 0.095, type: "sine", gainVal: 0.09, delay: 0.095 });
+          },
+          // Tono armónico ascendente al acertar
+          correct() {
+            playTone({ freq: 523.25, duration: 0.14, type: "sine", gainVal: 0.13, delay: 0 });
+            playTone({ freq: 659.25, duration: 0.22, type: "sine", gainVal: 0.15, delay: 0.1 });
+          },
+          // Tono grave suave no punitivo al fallar
+          wrong() {
+            playTone({ freq: 215, endFreq: 170, duration: 0.2, type: "triangle", gainVal: 0.12, delay: 0 });
+          },
+          // Fanfarria armónica al completar las 10 estructuras
+          victory() {
+            const notes = [523.25, 659.25, 783.99, 1046.5];
+            notes.forEach((n, idx) => {
+              playTone({ freq: n, duration: idx === 3 ? 0.45 : 0.16, type: "triangle", gainVal: 0.14, delay: idx * 0.11 });
+            });
+          }
+        };
+      })();
+
+      /* ----------------------------------------------------------------------
+         4. REFERENCIAS AL DOM Y CONTROL DE CAPAS / DRAWER MÓVIL
+         ---------------------------------------------------------------------- */
+      const els = {
+        pillsContainer: document.getElementById("structure-pills"),
+        svgZones: Array.from(document.querySelectorAll(".anatomy-zone")),
+        pinMarkers: Array.from(document.querySelectorAll(".pin-marker")),
+        detailCard: document.getElementById("detail-card"),
+        drawerBackdrop: document.getElementById("drawer-backdrop"),
+        btnCloseDrawer: document.getElementById("btn-close-drawer"),
+        btnOpenDrawer: document.getElementById("btn-open-drawer"),
+        mobileBarTitle: document.getElementById("mobile-bar-title"),
+        detailBadges: document.getElementById("detail-badges"),
+        detailTitle: document.getElementById("detail-title"),
+        detailLatin: document.getElementById("detail-latin"),
+        detailHemo: document.getElementById("detail-hemo"),
+        detailDescription: document.getElementById("detail-description"),
+        quizStatus: document.getElementById("quiz-status"),
+        quizQuestion: document.getElementById("quiz-question"),
+        quizOptions: document.getElementById("quiz-options"),
+        quizFeedback: document.getElementById("quiz-feedback"),
+        progressFill: document.getElementById("progress-fill"),
+        progressLabel: document.getElementById("progress-label"),
+        btnPrev: document.getElementById("btn-prev"),
+        btnNext: document.getElementById("btn-next"),
+        btnMute: document.getElementById("btn-mute"),
+        muteIcon: document.getElementById("mute-icon"),
+        muteLabel: document.getElementById("mute-label"),
+        btnDownloadHeader: document.getElementById("btn-download-header"),
+        btnDownloadModal: document.getElementById("btn-download-modal"),
+        modal: document.getElementById("achievement-modal"),
+        statMastered: document.getElementById("stat-mastered"),
+        statAccuracy: document.getElementById("stat-accuracy"),
+        btnRestart: document.getElementById("btn-restart"),
+        btnCloseModal: document.getElementById("btn-close-modal"),
+        toast: document.getElementById("toast")
+      };
+
+      let toastTimer = null;
+      function showToast(message) {
+        els.toast.textContent = message;
+        els.toast.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          els.toast.classList.remove("show");
+        }, 3000);
+      }
+
+      function isMobileViewport() {
+        return window.innerWidth < 900;
+      }
+
+      function syncBodyScrollLock() {
+        const hasModal = els.modal.classList.contains("open");
+        const hasMobileDrawer = isMobileViewport() && state.drawerOpen;
+        document.body.classList.toggle("overlay-open", hasModal || hasMobileDrawer);
+      }
+
+      function openMobileDrawer() {
+        state.drawerOpen = true;
+        els.detailCard.classList.add("drawer-open");
+        els.drawerBackdrop.classList.add("open");
+        els.detailCard.scrollTop = 0;
+        syncBodyScrollLock();
+      }
+
+      function closeMobileDrawer() {
+        state.drawerOpen = false;
+        els.detailCard.classList.remove("drawer-open");
+        els.drawerBackdrop.classList.remove("open");
+        syncBodyScrollLock();
+      }
+
+      /* ----------------------------------------------------------------------
+         5. RENDERIZADO DE INTERFAZ Y SINCRONIZACIÓN SVG (#layer-pins) <-> FICHA
+         ---------------------------------------------------------------------- */
+      function renderPills() {
+        els.pillsContainer.innerHTML = "";
+        STRUCTURES.forEach((item) => {
+          const isCompleted = state.completedIds.has(item.id);
+          const isSelected = state.currentId === item.id;
+
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "pill-btn" + (isSelected ? " selected" : "") + (isCompleted ? " completed" : "");
+          btn.setAttribute("aria-pressed", String(isSelected));
+          btn.innerHTML = `
+            <span class="pill-num ${item.bloodType}">${item.id}</span>
+            <span class="pill-title">${item.shortName}</span>
+            ${isCompleted ? '<span class="pill-check" aria-label="Completada">✓</span>' : ""}
+          `;
+          btn.addEventListener("click", () => selectStructure(item.id, true, true));
+          els.pillsContainer.appendChild(btn);
+        });
+      }
+
+      function updateSvgHighlights() {
+        // Resaltar zona anatómica
+        els.svgZones.forEach((zone) => {
+          const zoneId = Number(zone.getAttribute("data-id"));
+          zone.classList.toggle("active-zone", zoneId === state.currentId);
+        });
+
+        // Actualizar estados visuales en #layer-pins (Claro / Explorado / Activo)
+        els.pinMarkers.forEach((pin) => {
+          const pinId = Number(pin.getAttribute("data-id"));
+          const item = STRUCTURES.find((s) => s.id === pinId);
+          const isActive = pinId === state.currentId;
+          const isCompleted = state.completedIds.has(pinId);
+
+          pin.classList.toggle("active-pin", isActive);
+          pin.classList.toggle("completed-pin", isCompleted);
+
+          const bgCircle = pin.querySelector(".pin-bg");
+          const textEl = pin.querySelector(".pin-text");
+          if (!bgCircle || !textEl || !item) return;
+
+          const baseColor =
+            item.bloodType === "oxy"
+              ? "#be123c"
+              : item.bloodType === "deoxy"
+              ? "#1d4ed8"
+              : "#0f766e";
+
+          if (isActive) {
+            bgCircle.setAttribute("fill", "#f59e0b");
+            bgCircle.setAttribute("stroke", "#ffffff");
+            textEl.setAttribute("fill", "#ffffff");
+          } else if (isCompleted) {
+            bgCircle.setAttribute("fill", "#15803d");
+            bgCircle.setAttribute("stroke", "#ffffff");
+            textEl.setAttribute("fill", "#ffffff");
+          } else {
+            bgCircle.setAttribute("fill", "#ffffff");
+            bgCircle.setAttribute("stroke", baseColor);
+            textEl.setAttribute("fill", baseColor);
+          }
+        });
+      }
+
+      function updateProgressBar() {
+        const count = state.completedIds.size;
+        const total = STRUCTURES.length;
+        const pct = Math.round((count / total) * 100);
+        els.progressFill.style.width = `${pct}%`;
+        els.progressLabel.textContent = `${count} / ${total} dominadas`;
+      }
+
+      function renderDetailCard() {
+        const item = STRUCTURES.find((s) => s.id === state.currentId) || STRUCTURES[0];
+
+        // Actualizar barra móvil auxiliar
+        els.mobileBarTitle.textContent = `${item.id}. ${item.shortName}`;
+
+        // Animación sutil
+        els.detailCard.classList.remove("animate-in");
+        void els.detailCard.offsetWidth;
+        els.detailCard.classList.add("animate-in");
+
+        const badgeClass =
+          item.bloodType === "oxy"
+            ? "badge-oxy"
+            : item.bloodType === "deoxy"
+            ? "badge-deoxy"
+            : "badge-valve";
+
+        els.detailBadges.innerHTML = `
+          <span class="badge badge-neutral">Estructura ${item.id} de 10</span>
+          <span class="badge ${badgeClass}">${item.bloodLabel}</span>
+          <span class="badge badge-neutral">${item.category}</span>
+        `;
+
+        els.detailTitle.textContent = `${item.id}. ${item.title}`;
+        els.detailLatin.textContent = `Terminologia Anatomica: ${item.latin}`;
+
+        els.detailHemo.innerHTML = `
+          <div class="hemo-box">
+            <div class="hemo-label">Presión Fisiológica</div>
+            <div class="hemo-value">${item.pressure}</div>
+          </div>
+          <div class="hemo-box">
+            <div class="hemo-label">Ciclo Cardíaco</div>
+            <div class="hemo-value">${item.cyclePhase}</div>
+          </div>
+        `;
+
+        els.detailDescription.innerHTML = `<p>${item.description}</p>`;
+
+        // Renderizar micro-pregunta
+        const isDone = state.completedIds.has(item.id);
+        const savedAnswer = state.answeredMap[item.id];
+
+        els.quizStatus.textContent = isDone ? "✓ Verificada" : "Responde para validar";
+        els.quizStatus.style.color = isDone ? "var(--success)" : "var(--text-muted)";
+        els.quizQuestion.textContent = item.question;
+
+        els.quizOptions.innerHTML = "";
+        const letters = ["A", "B", "C"];
+
+        item.options.forEach((optText, idx) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "option-btn";
+
+          if (savedAnswer) {
+            if (idx === item.correctIndex && savedAnswer.isCorrect) {
+              btn.classList.add("correct-choice");
+            } else if (idx === savedAnswer.selectedIndex && !savedAnswer.isCorrect) {
+              btn.classList.add("wrong-choice");
+            }
+          }
+
+          btn.innerHTML = `
+            <span class="option-letter">${letters[idx]}</span>
+            <span>${optText}</span>
+          `;
+
+          btn.addEventListener("click", () => handleAnswer(item, idx));
+          els.quizOptions.appendChild(btn);
+        });
+
+        if (savedAnswer) {
+          els.quizFeedback.className =
+            "feedback-panel visible " + (savedAnswer.isCorrect ? "success" : "error");
+          els.quizFeedback.innerHTML = savedAnswer.isCorrect
+            ? `<strong>✓ ¡Fundamento correcto!</strong> ${item.explanation}`
+            : `<strong>✕ Revisa el concepto fisiológico:</strong> ${item.explanation} <em>(Puedes volver a seleccionar la opción correcta para validar esta estructura).</em>`;
+        } else {
+          els.quizFeedback.className = "feedback-panel";
+          els.quizFeedback.innerHTML = "";
+        }
+      }
+
+      function handleAnswer(item, selectedIndex) {
+        const isCorrect = selectedIndex === item.correctIndex;
+        state.answeredMap[item.id] = { selectedIndex, isCorrect };
+
+        if (isCorrect) {
+          SoundEngine.correct();
+          state.completedIds.add(item.id);
+          updateProgressBar();
+          updateSvgHighlights();
+          renderPills();
+          renderDetailCard();
+
+          // Comprobar si completó las 10 estructuras
+          if (state.completedIds.size === STRUCTURES.length && !state.modalShown) {
+            state.modalShown = true;
+            setTimeout(() => {
+              closeMobileDrawer();
+              openAchievementModal();
+            }, 540);
+          }
+        } else {
+          SoundEngine.wrong();
+          if (!state.completedIds.has(item.id)) {
+            state.firstAttemptErrors.add(item.id);
+          }
+          renderDetailCard();
+        }
+      }
+
+      function selectStructure(id, playSound = true, shouldOpenMobileDrawer = true) {
+        state.currentId = id;
+        if (playSound) {
+          SoundEngine.select();
+        }
+        updateSvgHighlights();
+        renderPills();
+        renderDetailCard();
+
+        if (shouldOpenMobileDrawer && isMobileViewport()) {
+          openMobileDrawer();
+        }
+      }
+
+      /* ----------------------------------------------------------------------
+         6. MODAL DE LOGRO Y DESCARGA DEL PROPIO ARCHIVO HTML AUTOCONTENIDO
+         ---------------------------------------------------------------------- */
+      function openAchievementModal() {
+        SoundEngine.victory();
+        const cleanCount = STRUCTURES.length - state.firstAttemptErrors.size;
+        const accuracy = Math.max(0, Math.round((cleanCount / STRUCTURES.length) * 100));
+        els.statMastered.textContent = `${state.completedIds.size}/${STRUCTURES.length}`;
+        els.statAccuracy.textContent = `${accuracy}%`;
+        els.modal.classList.add("open");
+        syncBodyScrollLock();
+      }
+
+      function closeAchievementModal() {
+        els.modal.classList.remove("open");
+        syncBodyScrollLock();
+      }
+
+      function downloadSelfContainedHTML() {
+        try {
+          const clone = document.documentElement.cloneNode(true);
+
+          // Limpiar estados transitorios en el clon antes de serializar
+          const bodyClone = clone.querySelector("body");
+          if (bodyClone) bodyClone.classList.remove("overlay-open");
+
+          const modalClone = clone.querySelector("#achievement-modal");
+          if (modalClone) modalClone.classList.remove("open");
+
+          const drawerClone = clone.querySelector("#detail-card");
+          if (drawerClone) drawerClone.classList.remove("drawer-open");
+
+          const backdropClone = clone.querySelector("#drawer-backdrop");
+          if (backdropClone) backdropClone.classList.remove("open");
+
+          const toastClone = clone.querySelector("#toast");
+          if (toastClone) {
+            toastClone.classList.remove("show");
+            toastClone.textContent = "";
+          }
+
+          const htmlContent = "<!DOCTYPE html>\n" + clone.outerHTML;
+          const blob = new Blob([htmlContent], { type: "text/html;charset=utf-8" });
+          const url = URL.createObjectURL(blob);
+
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = "anatomia-cardiaca-interactiva.html";
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+
+          setTimeout(() => URL.revokeObjectURL(url), 1500);
+          showToast("Descargando anatomia-cardiaca-interactiva.html...");
+        } catch (err) {
+          showToast("No se pudo iniciar la descarga directa en este visor.");
+        }
+      }
+
+      function resetExploration() {
+        state.currentId = 1;
+        state.completedIds.clear();
+        state.firstAttemptErrors.clear();
+        state.answeredMap = {};
+        state.modalShown = false;
+        closeAchievementModal();
+        closeMobileDrawer();
+        updateProgressBar();
+        selectStructure(1, true, false);
+        showToast("Exploración reiniciada (0/10)");
+      }
+
+      /* ----------------------------------------------------------------------
+         7. EVENTOS DE INTERACCIÓN (ZONES SVG, PINES SVG, DRAWER, TECLADO Y AUDIO)
+         ---------------------------------------------------------------------- */
+      function bindInteractiveSvgGroup(elementsList) {
+        elementsList.forEach((el) => {
+          const id = Number(el.getAttribute("data-id"));
+          el.addEventListener("click", () => selectStructure(id, true, true));
+          el.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              selectStructure(id, true, true);
+            }
+          });
+        });
+      }
+
+      bindInteractiveSvgGroup(els.svgZones);
+      bindInteractiveSvgGroup(els.pinMarkers);
+
+      els.btnPrev.addEventListener("click", () => {
+        const prevId = state.currentId === 1 ? STRUCTURES.length : state.currentId - 1;
+        selectStructure(prevId, true, false);
+      });
+
+      els.btnNext.addEventListener("click", () => {
+        const nextId = state.currentId === STRUCTURES.length ? 1 : state.currentId + 1;
+        selectStructure(nextId, true, false);
+      });
+
+      els.btnOpenDrawer.addEventListener("click", openMobileDrawer);
+      els.btnCloseDrawer.addEventListener("click", closeMobileDrawer);
+      els.drawerBackdrop.addEventListener("click", closeMobileDrawer);
+
+      els.btnMute.addEventListener("click", () => {
+        state.isMuted = !state.isMuted;
+        els.btnMute.setAttribute("aria-pressed", String(state.isMuted));
+        els.btnMute.classList.toggle("muted", state.isMuted);
+        els.muteIcon.textContent = state.isMuted ? "🔇" : "🔊";
+        els.muteLabel.textContent = state.isMuted ? "Silencio" : "Sonido";
+        if (!state.isMuted) {
+          SoundEngine.select();
+        }
+      });
+
+      els.btnDownloadHeader.addEventListener("click", downloadSelfContainedHTML);
+      els.btnDownloadModal.addEventListener("click", downloadSelfContainedHTML);
+      els.btnRestart.addEventListener("click", resetExploration);
+      els.btnCloseModal.addEventListener("click", closeAchievementModal);
+
+      // Cerrar overlays con tecla Escape
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          if (els.modal.classList.contains("open")) {
+            closeAchievementModal();
+          } else if (state.drawerOpen && isMobileViewport()) {
+            closeMobileDrawer();
+          }
+        }
+      });
+
+      // Ajustar bloqueo de scroll al redimensionar entre móvil y escritorio
+      window.addEventListener("resize", () => {
+        if (!isMobileViewport() && state.drawerOpen) {
+          els.drawerBackdrop.classList.remove("open");
+        }
+        syncBodyScrollLock();
+      });
+
+      // Inicialización inicial (en móvil inicia mostrando el corazón completo sin taparlo)
+      updateProgressBar();
+      selectStructure(1, false, false);
+    })();
+  </script>
+</body>
+</html>

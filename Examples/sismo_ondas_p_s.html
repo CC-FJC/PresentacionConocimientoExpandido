@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ondas P y S: ¿a qué distancia fue el sismo?</title>
+<style>
+:root{--bg:#f6f4ef;--ink:#1d2433;--muted:#566074;--card:#ffffff;--line:#d9d5ca;--p:#1b6ca8;--s:#c8480a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:12px}
+h1{font-size:1.3rem;line-height:1.25;margin:4px 0 2px}
+.sub{color:var(--muted);margin:0 0 12px;font-size:.95rem}
+.grid{display:grid;gap:12px}
+@media(min-width:900px){.grid{grid-template-columns:1.1fr 1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px}
+canvas{display:block;width:100%;border-radius:8px;background:#fbfaf7}
+#map{aspect-ratio:200/140;touch-action:none;cursor:crosshair}
+#map:focus-visible{outline:3px solid var(--p);outline-offset:2px}
+#seis{height:230px}
+.hint{margin:8px 2px 0;color:var(--muted);font-size:.88rem}
+.controls{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center}
+.spd{display:inline-flex;gap:6px;margin-left:auto}
+button{min-height:44px;min-width:44px;padding:0 14px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--ink);font:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--p);outline-offset:2px}
+button.primary{background:var(--ink);color:#fff;border-color:var(--ink);font-weight:600}
+button[aria-pressed="true"]{background:#e6eef8;border-color:var(--p);font-weight:700}
+.legend{list-style:none;margin:12px 0 0;padding:0;font-size:.92rem}
+.legend li{margin:4px 0;display:flex;align-items:center;gap:8px}
+.sw{flex:none;display:inline-block;width:34px;height:0;border-top:3px solid}
+.sw.p{border-color:var(--p);border-top-style:solid}
+.sw.s{border-color:var(--s);border-top-style:dashed}
+.tblwrap{overflow-x:auto;margin-top:10px}
+table{width:100%;border-collapse:collapse;font-size:.85rem;font-variant-numeric:tabular-nums}
+th,td{padding:7px 4px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+thead th{color:var(--muted);font-weight:600;font-size:.78rem}
+th:first-child,td:first-child{text-align:left}
+tbody th{font-weight:700}
+.rule{margin:12px 2px 4px;font-size:.95rem}
+.note{margin:4px 2px 0;color:var(--muted);font-size:.82rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Ondas P y S: ¿a qué distancia fue el sismo?</h1>
+  <p class="sub">Mueve el epicentro, lanza el sismo y observa cuánto tarda cada onda en llegar a las estaciones.</p>
+  <div class="grid">
+    <section class="card" aria-label="Mapa y controles">
+      <canvas id="map" tabindex="0" role="img" aria-label="Mapa esquemático con tres estaciones sismológicas (A, B y C) y el epicentro. Toca o arrastra para mover el epicentro; con el teclado usa las flechas."></canvas>
+      <p class="hint">Toca o arrastra el mapa para mover el epicentro. Mapa esquemático de 200 × 140 km.</p>
+      <div class="controls">
+        <button id="go" class="primary" type="button">▶ Sismo</button>
+        <button id="reset" type="button">↺ Reiniciar</button>
+        <span class="spd" role="group" aria-label="Velocidad de la animación">
+          <button type="button" data-s="1" aria-pressed="false">1×</button>
+          <button type="button" data-s="2" aria-pressed="true">2×</button>
+          <button type="button" data-s="4" aria-pressed="false">4×</button>
+        </span>
+      </div>
+      <ul class="legend">
+        <li><span class="sw p"></span>Onda P (primaria): la más rápida, línea continua, 6,0 km/s</li>
+        <li><span class="sw s"></span>Onda S (secundaria): más lenta, línea punteada, 3,5 km/s</li>
+      </ul>
+    </section>
+    <section class="card" aria-label="Sismogramas y tiempos">
+      <canvas id="seis" role="img" aria-label="Sismogramas de las estaciones A, B y C a lo largo del tiempo"></canvas>
+      <div class="tblwrap">
+        <table id="tbl">
+          <thead><tr><th>Estación</th><th>Distancia</th><th>Llega P</th><th>Llega S</th><th>S − P</th><th>8,4 × (S−P)</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="rule"><strong>Regla práctica:</strong> por cada segundo entre la llegada de P y la de S, el epicentro está a unos 8,4 km. Con las distancias de las tres estaciones se puede localizar el epicentro (triangulación).</p>
+      <p class="note">Modelo simplificado: medio uniforme, sismo en superficie, Vp = 6,0 km/s y Vs = 3,5 km/s. En la Tierra real las velocidades cambian con la profundidad y el tipo de roca.</p>
+    </section>
+  </div>
+</div>
+<script>
+(function () {
+  'use strict';
+  var VP = 6.0, VS = 3.5, K = VP * VS / (VP - VS); // 8,4 km por cada segundo de diferencia S-P
+  var W = 200, H = 140, TMAX = 80, TAU = Math.PI * 2;
+  var ST = [{ n: 'A', x: 35, y: 105 }, { n: 'B', x: 165, y: 95 }, { n: 'C', x: 105, y: 25 }];
+  var epi = { x: 90, y: 70 };
+  var t = 0, running = false, speed = 2, last = 0, tEnd = TMAX, D = [], lastRows = '';
+  var COL = { p: '#1b6ca8', s: '#c8480a', ink: '#1d2433', grid: '#e6e2d8', muted: '#566074', epi: '#b3261e', halo: '#fbfaf7' };
+  var $ = function (id) { return document.getElementById(id); };
+  var map = $('map'), seis = $('seis'), mc = map.getContext('2d'), sc = seis.getContext('2d');
+  var tb = document.querySelector('#tbl tbody');
+  var dpr = 1, mw = 0, mh = 0, sw = 0, sh = 0, dragging = false;
+
+  function nf(v, d) { return v.toLocaleString('es-CO', { minimumFractionDigits: d, maximumFractionDigits: d }); }
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+  function recalc() {
+    var mx = 0;
+    D = ST.map(function (s) {
+      var d = Math.hypot(s.x - epi.x, s.y - epi.y);
+      var q = { n: s.n, x: s.x, y: s.y, d: d, tP: d / VP, tS: d / VS };
+      mx = Math.max(mx, q.tS);
+      return q;
+    });
+    tEnd = Math.min(TMAX, mx + 12);
+  }
+
+  function sig(q, i, tt) {
+    var att = 1 / (1 + q.d / 100), v = 0.05 * Math.sin(tt * 7.3 + i * 1.7) + 0.04 * Math.sin(tt * 13.1 + i * 0.9), u;
+    if (tt >= q.tP) { u = tt - q.tP; v += att * 0.32 * Math.min(1, u / 0.3) * Math.exp(-u / 3.5) * Math.sin(TAU * 1.5 * u); }
+    if (tt >= q.tS) { u = tt - q.tS; v += att * 0.8 * Math.min(1, u / 0.3) * Math.exp(-u / 7) * Math.sin(TAU * 0.8 * u); }
+    return v;
+  }
+
+  function label(c, txt, x, y, align) {
+    c.textAlign = align || 'left'; c.lineWidth = 3; c.strokeStyle = COL.halo; c.strokeText(txt, x, y);
+    c.fillStyle = COL.ink; c.fillText(txt, x, y);
+  }
+
+  function drawMap() {
+    var c = mc, k = mw / W, ex = epi.x * k, ey = epi.y * k, i;
+    c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, mw, mh);
+    c.setLineDash([]); c.lineWidth = 1; c.strokeStyle = COL.grid; c.beginPath();
+    for (i = 0; i <= W; i += 20) { c.moveTo(i * k, 0); c.lineTo(i * k, mh); }
+    for (i = 0; i <= H; i += 20) { c.moveTo(0, i * k); c.lineTo(mw, i * k); }
+    c.stroke();
+    if (t > 0) {
+      var rp = VP * t * k, rs = VS * t * k;
+      c.save(); c.beginPath(); c.rect(0, 0, mw, mh); c.clip();
+      c.fillStyle = 'rgba(27,108,168,0.05)'; c.beginPath(); c.arc(ex, ey, rp, 0, TAU); c.fill();
+      c.fillStyle = 'rgba(200,72,10,0.05)'; c.beginPath(); c.arc(ex, ey, rs, 0, TAU); c.fill();
+      c.lineWidth = 2.5; c.strokeStyle = COL.p; c.setLineDash([]); c.beginPath(); c.arc(ex, ey, rp, 0, TAU); c.stroke();
+      c.strokeStyle = COL.s; c.setLineDash([9, 6]); c.beginPath(); c.arc(ex, ey, rs, 0, TAU); c.stroke();
+      c.restore(); c.setLineDash([]);
+    }
+    c.font = '700 14px system-ui,-apple-system,Segoe UI,Roboto,sans-serif';
+    D.forEach(function (q) {
+      var x = q.x * k, y = q.y * k;
+      if (t >= q.tP) { c.lineWidth = 3; c.strokeStyle = COL.p; c.setLineDash([]); c.beginPath(); c.arc(x, y, 16, 0, TAU); c.stroke(); }
+      if (t >= q.tS) { c.lineWidth = 3; c.strokeStyle = COL.s; c.setLineDash([5, 4]); c.beginPath(); c.arc(x, y, 23, 0, TAU); c.stroke(); c.setLineDash([]); }
+      c.fillStyle = COL.ink; c.beginPath(); c.moveTo(x, y - 10); c.lineTo(x - 9, y + 7); c.lineTo(x + 9, y + 7); c.closePath(); c.fill();
+      label(c, q.n, x + 12, y - 10, 'left');
+    });
+    c.setLineDash([]);
+    c.lineWidth = 2; c.strokeStyle = COL.ink; c.globalAlpha = 0.25; c.beginPath(); c.arc(ex, ey, 17, 0, TAU); c.stroke(); c.globalAlpha = 1;
+    c.fillStyle = COL.epi; c.beginPath(); c.arc(ex, ey, 8, 0, TAU); c.fill(); c.lineWidth = 2; c.strokeStyle = '#fff'; c.stroke();
+    label(c, 'Epicentro', clamp(ex, 36, mw - 36), ey + 30 > mh - 4 ? ey - 22 : ey + 30, 'center');
+    c.lineWidth = 3; c.strokeStyle = COL.ink; c.beginPath(); c.moveTo(10, mh - 12); c.lineTo(10 + 50 * k, mh - 12); c.stroke();
+    label(c, '50 km', 10, mh - 18, 'left');
+  }
+
+  function drawSeis() {
+    var c = sc, L = 30, R = 8, T = 4, AX = 22, rh = (sh - T - AX) / 3, x0 = L, x1 = sw - R, i, n, kk;
+    function X(tt) { return x0 + (tt / TMAX) * (x1 - x0); }
+    c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, sw, sh); c.setLineDash([]);
+    c.font = '12px system-ui,-apple-system,Segoe UI,Roboto,sans-serif'; c.lineWidth = 1;
+    for (kk = 0; kk <= TMAX; kk += 20) {
+      c.strokeStyle = COL.grid; c.beginPath(); c.moveTo(X(kk), T); c.lineTo(X(kk), sh - AX); c.stroke();
+      c.fillStyle = COL.muted; c.textAlign = 'center'; c.fillText(kk + ' s', clamp(X(kk), 14, sw - 14), sh - 6);
+    }
+    D.forEach(function (q, idx) {
+      var top = T + rh * idx, cy = top + rh / 2, amp = rh * 0.46;
+      c.setLineDash([]); c.lineWidth = 1; c.strokeStyle = COL.grid; c.beginPath(); c.moveTo(x0, cy); c.lineTo(x1, cy); c.stroke();
+      c.font = '700 14px system-ui,-apple-system,Segoe UI,Roboto,sans-serif'; c.fillStyle = COL.ink; c.textAlign = 'left'; c.fillText(q.n, 6, cy + 5);
+      if (t > 0) {
+        c.save(); c.beginPath(); c.rect(x0, top, x1 - x0, rh); c.clip();
+        c.strokeStyle = COL.ink; c.lineWidth = 1.4; c.beginPath();
+        n = Math.floor(t / 0.05);
+        for (i = 0; i <= n; i++) { var tt = i * 0.05, px = X(tt), py = cy - sig(q, idx, tt) * amp; if (i === 0) c.moveTo(px, py); else c.lineTo(px, py); }
+        c.stroke(); c.restore();
+        c.font = '700 12px system-ui,-apple-system,Segoe UI,Roboto,sans-serif';
+        if (t >= q.tP) { c.strokeStyle = COL.p; c.setLineDash([]); c.lineWidth = 2; c.beginPath(); c.moveTo(X(q.tP), top + 2); c.lineTo(X(q.tP), top + rh - 2); c.stroke(); c.fillStyle = COL.p; c.textAlign = 'right'; c.fillText('P', X(q.tP) - 3, top + 13); }
+        if (t >= q.tS) { c.strokeStyle = COL.s; c.setLineDash([4, 3]); c.lineWidth = 2; c.beginPath(); c.moveTo(X(q.tS), top + 2); c.lineTo(X(q.tS), top + rh - 2); c.stroke(); c.setLineDash([]); c.fillStyle = COL.s; c.textAlign = 'left'; c.fillText('S', X(q.tS) + 3, top + 13); }
+      }
+    });
+    if (t > 0) { c.setLineDash([]); c.strokeStyle = 'rgba(29,36,51,0.35)'; c.lineWidth = 1; c.beginPath(); c.moveTo(X(t), T); c.lineTo(X(t), sh - AX); c.stroke(); }
+  }
+
+  function drawRows() {
+    var h = '';
+    D.forEach(function (q) {
+      var gp = t >= q.tP, gs = t >= q.tS;
+      h += '<tr><th scope="row">' + q.n + '</th><td>' + nf(q.d, 0) + ' km</td><td>' + (gp ? nf(q.tP, 1) + ' s' : '—') + '</td><td>' + (gs ? nf(q.tS, 1) + ' s' : '—') + '</td><td>' + (gs ? nf(q.tS - q.tP, 1) + ' s' : '—') + '</td><td>' + (gs ? nf(K * (q.tS - q.tP), 0) + ' km' : '—') + '</td></tr>';
+    });
+    if (h !== lastRows) { tb.innerHTML = h; lastRows = h; }
+  }
+
+  function render() { drawMap(); drawSeis(); drawRows(); }
+
+  function btn() {
+    $('go').textContent = running ? '⏸ Pausa' : (t >= tEnd ? '↺ Repetir' : (t > 0 ? '▶ Continuar' : '▶ Sismo'));
+  }
+
+  function frame(ts) {
+    if (!running) return;
+    var dt = Math.min(0.1, (ts - last) / 1000); last = ts;
+    t = Math.min(tEnd, t + dt * speed);
+    render();
+    if (t >= tEnd) { running = false; btn(); return; }
+    requestAnimationFrame(frame);
+  }
+
+  function reset() { running = false; t = 0; recalc(); render(); btn(); }
+
+  function setEpi(x, y) { epi.x = clamp(x, 2, W - 2); epi.y = clamp(y, 2, H - 2); reset(); }
+  function fromEvent(e) {
+    var r = map.getBoundingClientRect();
+    setEpi((e.clientX - r.left) / r.width * W, (e.clientY - r.top) / r.height * H);
+  }
+
+  map.addEventListener('pointerdown', function (e) { dragging = true; try { map.setPointerCapture(e.pointerId); } catch (_) {} fromEvent(e); });
+  map.addEventListener('pointermove', function (e) { if (dragging) fromEvent(e); });
+  map.addEventListener('pointerup', function () { dragging = false; });
+  map.addEventListener('pointercancel', function () { dragging = false; });
+  map.addEventListener('keydown', function (e) {
+    var s = e.shiftKey ? 1 : 5, k = e.key, dx = 0, dy = 0;
+    if (k === 'ArrowLeft') dx = -s; else if (k === 'ArrowRight') dx = s; else if (k === 'ArrowUp') dy = -s; else if (k === 'ArrowDown') dy = s; else return;
+    e.preventDefault(); setEpi(epi.x + dx, epi.y + dy);
+  });
+
+  $('go').addEventListener('click', function () {
+    if (running) { running = false; btn(); return; }
+    if (t >= tEnd) t = 0;
+    running = true; last = performance.now(); btn(); requestAnimationFrame(frame);
+  });
+  $('reset').addEventListener('click', reset);
+  Array.prototype.forEach.call(document.querySelectorAll('[data-s]'), function (b) {
+    b.addEventListener('click', function () {
+      speed = +b.getAttribute('data-s');
+      Array.prototype.forEach.call(document.querySelectorAll('[data-s]'), function (o) { o.setAttribute('aria-pressed', o === b ? 'true' : 'false'); });
+    });
+  });
+
+  function size() {
+    dpr = Math.max(1, window.devicePixelRatio || 1);
+    var r = map.getBoundingClientRect(), r2 = seis.getBoundingClientRect();
+    mw = r.width; mh = r.height; sw = r2.width; sh = r2.height;
+    map.width = Math.round(mw * dpr); map.height = Math.round(mh * dpr);
+    seis.width = Math.round(sw * dpr); seis.height = Math.round(sh * dpr);
+    render();
+  }
+  window.addEventListener('resize', size);
+  if (window.ResizeObserver) new ResizeObserver(function () { var r = map.getBoundingClientRect(); if (Math.abs(r.width - mw) > 1) size(); }).observe(map);
+
+  recalc(); size(); btn();
+})();
+</script>
+</body>
+</html>

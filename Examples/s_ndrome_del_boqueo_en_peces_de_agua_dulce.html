@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>¿Por qué los peces de agua dulce boquean en la superficie?</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Balsamiq+Sans:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: #f9f9f9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      font-family: 'Balsamiq Sans', cursive, sans-serif;
+      color: #141414;
+      padding: 20px;
+    }
+    .card-container {
+      background: #ffffff;
+      background-image: radial-gradient(#e6e6e6 1.2px, transparent 1.2px);
+      background-size: 16px 16px;
+      border: 2px solid #141414;
+      border-radius: 12px;
+      box-shadow: 4px 4px 0px #141414;
+      padding: 16px;
+      max-width: 640px;
+      width: 100%;
+      cursor: pointer;
+      user-select: none;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+    .hint {
+      text-align: center;
+      font-size: 12px;
+      color: #555;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card-container" id="canvas-card" role="button" tabindex="0" aria-label="Escena interactiva sobre el comportamiento de peces boqueando en la superficie: al bajar el oxígeno disuelto en el agua, el pez sube a la película superficial más rica en O2 para respirar.">
+    <canvas id="stickCanvas" width="600" height="260"></canvas>
+    <div class="hint">💡 Haz clic en la escena para volver a reproducir la animación</div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('stickCanvas');
+    const ctx = canvas.getContext('2d');
+    const card = document.getElementById('canvas-card');
+
+    const BASE_WIDTH = 600;
+    const BASE_HEIGHT = 260;
+
+    // Paleta Ink-and-Butter
+    const COLOR_INK = '#141414';
+    const COLOR_PAPER = '#ffffff';
+    const COLOR_ACCENT = '#fef08a'; // Amarillo mantequilla
+    const COLOR_WATER_BLUE = '#e0f2fe';
+    const COLOR_BLUE_BUBBLE = '#38bdf8';
+    const COLOR_RED_ALERT = '#f87171';
+    const COLOR_GREEN_OK = '#4ade80';
+
+    function setupCanvas() {
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = BASE_WIDTH * dpr;
+      canvas.height = BASE_HEIGHT * dpr;
+      ctx.scale(dpr, dpr);
+    }
+    setupCanvas();
+
+    // Duración total: 11 segundos
+    const DURATION = 11000;
+    let startTime = null;
+    let isAnimating = false;
+    let animFrame = null;
+
+    function easeInOut(t) {
+      return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+    }
+
+    function clamp(val, min, max) {
+      return Math.max(min, Math.min(max, val));
+    }
+
+    // Dibujo de línea estilo tinta
+    function strokeLine(x1, y1, x2, y2, width = 2) {
+      ctx.beginPath();
+      ctx.lineWidth = width;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.strokeStyle = COLOR_INK;
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+    }
+
+    // Acuario / Tanque de agua
+    function drawAquarium(x, y, w, h, waterLevelRatio = 0.8) {
+      ctx.save();
+      // Fondo del agua
+      const waterY = y + h * (1 - waterLevelRatio);
+      const waterH = h * waterLevelRatio;
+
+      ctx.fillStyle = COLOR_WATER_BLUE;
+      ctx.beginPath();
+      ctx.rect(x, waterY, w, waterH);
+      ctx.fill();
+
+      // Línea de la película de la superficie (fase rica en O2)
+      ctx.beginPath();
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = COLOR_BLUE_BUBBLE;
+      ctx.moveTo(x, waterY);
+      ctx.lineTo(x + w, waterY);
+      ctx.stroke();
+
+      // Marco del tanque
+      ctx.beginPath();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = COLOR_INK;
+      ctx.rect(x, y, w, h);
+      ctx.stroke();
+
+      // Grava / Planta en el fondo
+      ctx.beginPath();
+      ctx.ellipse(x + 40, y + h - 8, 12, 6, 0, 0, Math.PI * 2);
+      ctx.ellipse(x + 55, y + h - 6, 10, 5, 0, 0, Math.PI * 2);
+      ctx.fillStyle = '#e5e7eb';
+      ctx.fill();
+      ctx.stroke();
+
+      // Alga
+      ctx.beginPath();
+      ctx.moveTo(x + 45, y + h - 10);
+      ctx.quadraticCurveTo(x + 35, y + h - 35, x + 48, y + h - 55);
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = COLOR_INK;
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    // Indicador de nivel de Oxígeno Disuelto (O2)
+    function drawOxygenMeter(x, y, levelPercent, isAlert) {
+      ctx.save();
+      ctx.translate(x, y);
+
+      // Marco del medidor
+      ctx.fillStyle = COLOR_PAPER;
+      ctx.beginPath();
+      ctx.rect(0, 0, 36, 100);
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = COLOR_INK;
+      ctx.stroke();
+
+      // Nivel de O2 (barra)
+      const fillH = (levelPercent / 100) * 88;
+      ctx.fillStyle = isAlert ? COLOR_RED_ALERT : COLOR_GREEN_OK;
+      ctx.fillRect(4, 94 - fillH, 28, fillH);
+
+      // Rayitas de escala
+      for (let i = 1; i < 5; i++) {
+        strokeLine(28, 94 - (i * 18), 34, 94 - (i * 18), 1);
+      }
+
+      // Etiqueta O2
+      ctx.fillStyle = COLOR_INK;
+      ctx.font = 'bold 10px "Balsamiq Sans", cursive';
+      ctx.textAlign = 'center';
+      ctx.fillText('O₂', 18, -8);
+
+      ctx.font = 'bold 8.5px "Balsamiq Sans", cursive';
+      ctx.fillText(`${Math.round(levelPercent)}%`, 18, 114);
+
+      ctx.restore();
+    }
+
+    // Dibujar Pez estilo Ink-and-Butter
+    function drawFish(x, y, angle = 0, mouthOpen = false, scale = 1, tiltSideways = 0) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(angle);
+      // Compresión/inclinación lateral para simular flotar de lado o descompensado
+      const lateralScaleY = 1 - Math.abs(tiltSideways) * 0.45;
+      ctx.scale(scale, scale * lateralScaleY);
+
+      // Sombra sutil
+      ctx.beginPath();
+      ctx.ellipse(0, 15, 16, 4, 0, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0,0,0,0.06)';
+      ctx.fill();
+
+      // Cuerpo del pez
+      ctx.beginPath();
+      ctx.moveTo(-22, 0);
+      ctx.quadraticCurveTo(-10, -16, 14, -6);
+      
+      // Boca
+      if (mouthOpen) {
+        ctx.lineTo(20, -10);
+        ctx.lineTo(20, -2);
+        ctx.lineTo(22, 4);
+        ctx.lineTo(16, 6);
+      } else {
+        ctx.lineTo(22, 0);
+        ctx.lineTo(16, 6);
+      }
+
+      ctx.quadraticCurveTo(-10, 16, -22, 0);
+      ctx.fillStyle = COLOR_ACCENT;
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = COLOR_INK;
+      ctx.stroke();
+
+      // Si flota de lado, mostrar la otra aleta pectoral visible y una línea de panza/dorso inclinada
+      if (Math.abs(tiltSideways) > 0.15) {
+        ctx.beginPath();
+        ctx.moveTo(2, -5);
+        ctx.quadraticCurveTo(8, -14, 0, -16);
+        ctx.stroke();
+
+        // Ondas suaves de flotabilidad irregular
+        ctx.beginPath();
+        ctx.arc(0, 0, 24, -0.4, 0.4);
+        ctx.setLineDash([3, 3]);
+        ctx.lineWidth = 1.2;
+        ctx.strokeStyle = COLOR_BLUE_BUBBLE;
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      // Cola (Aleta caudal)
+      ctx.beginPath();
+      ctx.moveTo(-20, 0);
+      ctx.lineTo(-34, -12);
+      ctx.lineTo(-30, 0);
+      ctx.lineTo(-34, 12);
+      ctx.closePath();
+      ctx.fillStyle = COLOR_PAPER;
+      ctx.fill();
+      ctx.stroke();
+
+      // Aleta pectoral
+      ctx.beginPath();
+      ctx.moveTo(-2, 4);
+      ctx.quadraticCurveTo(4, 12, -4, 14);
+      ctx.stroke();
+
+      // Ojo
+      ctx.beginPath();
+      ctx.arc(10, -4, 3, 0, Math.PI * 2);
+      ctx.fillStyle = COLOR_INK;
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    // Burbujas
+    function drawBubbles(bubbles) {
+      bubbles.forEach(b => {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+        ctx.fillStyle = b.color || COLOR_PAPER;
+        ctx.fill();
+        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = COLOR_INK;
+        ctx.stroke();
+        ctx.restore();
+      });
+    }
+
+    // Burbuja de diálogo / pensamiento
+    function drawSpeechBubble(x, y, text, width = 110, height = 26) {
+      ctx.save();
+      ctx.fillStyle = COLOR_PAPER;
+      ctx.strokeStyle = COLOR_INK;
+      ctx.lineWidth = 1.5;
+
+      ctx.beginPath();
+      ctx.roundRect(x - width / 2, y - height / 2, width, height, 6);
+      ctx.fill();
+      ctx.stroke();
+
+      // Pikito inferior
+      ctx.beginPath();
+      ctx.moveTo(x - 5, y + height / 2);
+      ctx.lineTo(x, y + height / 2 + 5);
+      ctx.lineTo(x + 5, y + height / 2);
+      ctx.fillStyle = COLOR_PAPER;
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = COLOR_INK;
+      ctx.font = 'bold 9.5px "Balsamiq Sans", cursive';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(text, x, y);
+      ctx.restore();
+    }
+
+    // Renderizado principal
+    function render(progress, isReducedMotion = false) {
+      ctx.clearRect(0, 0, BASE_WIDTH, BASE_HEIGHT);
+
+      const aquariumX = 40;
+      const aquariumY = 40;
+      const aquariumW = 380;
+      const aquariumH = 190;
+      const waterSurfaceY = aquariumY + 38; // Nivel de la película de agua
+
+      drawAquarium(aquariumX, aquariumY, aquariumW, aquariumH, 0.8);
+
+      if (isReducedMotion) {
+        // Cuadro estático adaptado para reduced-motion
+        drawOxygenMeter(460, 50, 15, true);
+        drawFish(320, waterSurfaceY + 8, 0.65, true, 1.1, 0.85);
+        drawSpeechBubble(260, 45, "Queda flotando de lado / descompensado", 175, 24);
+
+        ctx.fillStyle = COLOR_ACCENT;
+        ctx.beginPath();
+        ctx.arc(520, 205, 20, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = COLOR_INK;
+        ctx.stroke();
+
+        ctx.fillStyle = COLOR_INK;
+        ctx.font = 'bold 9.5px "Balsamiq Sans", cursive';
+        ctx.textAlign = 'center';
+        ctx.fillText('! DE LADO', 520, 209);
+        return;
+      }
+
+      // Fases de Animación (Total: 11 segundos)
+      // Phase 1 (0.0 - 0.25): Pez nadando feliz, O2 alto (85%), pocas burbujas normales.
+      // Phase 2 (0.25 - 0.50): El O2 cae drásticamente (15%). El pez se asfixia en el fondo (boca abierta).
+      // Phase 3 (0.50 - 0.80): El pez sube en diagonal hacia la película superficial y boquea ("gasping").
+      // Phase 4 (0.80 - 1.00): Al tragar aire/boquear, queda flotando de lado / inclinado de forma anormal.
+
+      const animTime = progress * 11;
+      let o2Level = 85;
+      let isO2Alert = false;
+      let fishX = 140;
+      let fishY = aquariumY + 130;
+      let fishAngle = 0;
+      let fishTiltSideways = 0;
+      let mouthOpen = false;
+      let bubbles = [];
+      let showCheck = false;
+
+      if (progress < 0.25) {
+        // Fase 1: Agua bien oxigenada
+        const p = progress / 0.25;
+        fishX = 140 + Math.sin(p * Math.PI * 2) * 40;
+        fishY = aquariumY + 125 + Math.cos(p * Math.PI * 2) * 10;
+        fishAngle = Math.cos(p * Math.PI * 2) * 0.1;
+        o2Level = 85;
+        isO2Alert = false;
+
+        drawSpeechBubble(160, 65, "Agua con O₂ alto: Nivel normal", 145, 22);
+
+        // Burbujitas normales en el agua
+        for (let i = 0; i < 4; i++) {
+          bubbles.push({
+            x: 100 + i * 60 + Math.sin(animTime * 2 + i) * 8,
+            y: aquariumY + 150 - ((animTime * 20 + i * 30) % 90),
+            r: 3,
+            color: COLOR_BLUE_BUBBLE
+          });
+        }
+      } 
+      else if (progress >= 0.25 && progress < 0.50) {
+        // Fase 2: Caída de oxígeno (falta de aireación/calor)
+        const p = easeInOut((progress - 0.25) / 0.25);
+        o2Level = 85 - p * 70; // Cae de 85% a 15%
+        isO2Alert = o2Level < 30;
+
+        fishX = 180 + Math.sin(animTime * 4) * 8;
+        fishY = aquariumY + 135 + Math.cos(animTime * 3) * 5;
+        fishAngle = 0.15;
+        mouthOpen = Math.floor(animTime * 6) % 2 === 0;
+
+        drawSpeechBubble(190, 65, "¡El O₂ en el agua cae drásticamente!", 165, 24);
+
+        // Burbujitas rojas de advertencia
+        for (let i = 0; i < 3; i++) {
+          bubbles.push({
+            x: 120 + i * 80 + Math.sin(animTime * 3 + i) * 5,
+            y: aquariumY + 140 - ((animTime * 15 + i * 25) % 70),
+            r: 2.5,
+            color: COLOR_RED_ALERT
+          });
+        }
+      } 
+      else if (progress >= 0.50 && progress < 0.80) {
+        // Fase 3: Ascenso hacia la superficie a boquear (Gasping)
+        const p = easeInOut((progress - 0.50) / 0.30);
+        o2Level = 15;
+        isO2Alert = true;
+
+        // Trayectoria hacia la superficie superior derecha
+        fishX = 180 + p * 130;
+        fishY = (aquariumY + 135) - p * (135 - 38);
+        fishAngle = -Math.PI / 5 + Math.sin(animTime * 8) * 0.05;
+        mouthOpen = true;
+
+        drawSpeechBubble(250, 48, "Sube a 'boquear' a la capa superficial rica en O₂", 215, 24);
+
+        // Burbujas en la superficie donde toma aire
+        if (p > 0.6) {
+          bubbles.push({ x: fishX + 16, y: waterSurfaceY - 2, r: 4, color: COLOR_PAPER });
+          bubbles.push({ x: fishX + 22, y: waterSurfaceY - 6, r: 2.5, color: COLOR_BLUE_BUBBLE });
+        }
+      } 
+      else {
+        // Fase 4: Resultado final — el pez queda flotando de lado / ladeado de forma anormal
+        const p = easeInOut((progress - 0.80) / 0.20);
+        o2Level = 15;
+        isO2Alert = true;
+
+        // Se acomoda cerca de la superficie pero ladeado y oscilando suavemente sin nadar recto
+        fishX = 310 + Math.sin(animTime * 1.4) * 14;
+        fishY = waterSurfaceY + 10 + Math.cos(animTime * 1.8) * 5;
+        fishAngle = 0.2 + p * 0.55 + Math.sin(animTime * 2) * 0.08;
+        fishTiltSideways = p * 0.85;
+        mouthOpen = p < 0.5 ? (Math.floor(animTime * 4) % 2 === 0) : false;
+
+        drawSpeechBubble(250, 48, "Resultado: flota de lado / descompensado", 185, 24);
+
+        // Pequeña flecha/arco indicando el ladeado anormal
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(fishX, fishY, 30, -0.3, 0.85);
+        ctx.strokeStyle = COLOR_INK;
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([4, 3]);
+        ctx.stroke();
+        ctx.restore();
+
+        // Burbujitas en la zona de contacto
+        bubbles.push({ x: fishX + 18, y: waterSurfaceY - 3, r: 3.5, color: COLOR_PAPER });
+        bubbles.push({ x: fishX + 24, y: waterSurfaceY - 5, r: 2, color: COLOR_BLUE_BUBBLE });
+
+        showCheck = true;
+      }
+
+      // Dibujar medidor de O2
+      drawOxygenMeter(460, 50, o2Level, isO2Alert);
+
+      // Dibujar burbujas y pez
+      drawBubbles(bubbles);
+      drawFish(fishX, fishY, fishAngle, mouthOpen, 1.1, fishTiltSideways);
+
+      // Sello de conclusión del estado anormal
+      if (showCheck) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(520, 205, 21, 0, Math.PI * 2);
+        ctx.fillStyle = COLOR_ACCENT;
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = COLOR_INK;
+        ctx.stroke();
+
+        ctx.fillStyle = COLOR_INK;
+        ctx.font = 'bold 9.5px "Balsamiq Sans", cursive';
+        ctx.textAlign = 'center';
+        ctx.fillText('! DE LADO', 520, 209);
+        ctx.restore();
+      }
+    }
+
+    // Bucle de animación
+    function animate(timestamp) {
+      if (!startTime) startTime = timestamp;
+      const elapsed = timestamp - startTime;
+      const progress = clamp(elapsed / DURATION, 0, 1);
+
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      render(progress, prefersReducedMotion);
+
+      if (progress < 1 && !prefersReducedMotion) {
+        animFrame = requestAnimationFrame(animate);
+      } else {
+        isAnimating = false;
+      }
+    }
+
+    function startAnimation() {
+      if (isAnimating) cancelAnimationFrame(animFrame);
+      isAnimating = true;
+      startTime = null;
+      animFrame = requestAnimationFrame(animate);
+    }
+
+    // Observer para reproducir al entrar en pantalla
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && !isAnimating) {
+          startAnimation();
+        }
+      });
+    }, { threshold: 0.5 });
+
+    observer.observe(card);
+
+    // Reproducir con clic o teclado
+    card.addEventListener('click', startAnimation);
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        startAnimation();
+      }
+    });
+
+    // Render inicial
+    render(0);
+  </script>
+</body>
+</html>

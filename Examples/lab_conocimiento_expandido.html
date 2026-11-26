@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Laboratorio de conocimiento expandido</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --indigo:#1f00ff; --orange:#ff622b; --orange-d:#e54f1f; --white:#fff;
+  --fog:#f2f2f2; --bone:#f8f8f8; --mist:#ececec; --grid:#d3d3d3; --ink:#212121;
+  --display:'PP Right','Anton','Bebas Neue',Impact,'Arial Narrow Bold',sans-serif;
+  --body:'Archivo','Inter','DM Sans',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --r:5px; --bar:58px; --foot:58px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--white);color:var(--ink);font:400 17px/1.4 var(--body)}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--indigo)}
+:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
+
+/* ---------- barra superior ---------- */
+.top{position:fixed;inset:0 0 auto 0;height:var(--bar);display:flex;align-items:center;gap:14px;padding:0 18px;background:var(--white);border-bottom:1px solid var(--indigo);z-index:20}
+.brand{font:400 15px/1 var(--display);letter-spacing:.04em;text-transform:uppercase;color:var(--indigo);white-space:nowrap}
+.block{margin:0 auto;display:flex;border:1px solid var(--indigo);border-radius:var(--r);overflow:hidden}
+.block span{padding:7px 12px;font:600 12px/1 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--indigo);white-space:nowrap}
+.block span.on{background:var(--indigo);color:var(--white)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:10px 20px;border-radius:var(--r);border:1px solid var(--ink);background:transparent;font:600 13px/1 var(--body);letter-spacing:.06em;text-transform:uppercase;cursor:pointer;white-space:nowrap;text-decoration:none;color:var(--ink)}
+.btn.cta{background:var(--orange);border-color:var(--orange);color:var(--white)}
+.btn.cta:hover{background:var(--orange-d);border-color:var(--orange-d)}
+.btn.ghost{border-color:var(--indigo);color:var(--indigo);background:var(--white)}
+.btn.ghost:hover{background:var(--indigo);color:var(--white)}
+.indigo .btn.ghost{border-color:var(--white);color:var(--white);background:transparent}
+.indigo .btn.ghost:hover{background:var(--white);color:var(--indigo)}
+.menu-btn{border-color:var(--indigo);color:var(--indigo);min-width:40px;padding:10px 12px}
+
+/* ---------- diapositivas ---------- */
+.deck{position:fixed;inset:var(--bar) 0 var(--foot) 0}
+.slide{position:absolute;inset:0;overflow-y:auto;display:none;padding:56px 24px 48px}
+.slide.on{display:block;animation:in .22s ease-out}
+@keyframes in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.slide.on{animation:none}}
+.slide.light{background:var(--white)}
+.slide.fog{background:var(--fog)}
+.slide.indigo{background-color:var(--indigo);color:var(--white);
+  background-image:linear-gradient(rgba(211,211,211,.16) 1px,transparent 1px),linear-gradient(90deg,rgba(211,211,211,.16) 1px,transparent 1px);
+  background-size:48px 48px}
+.inner{max-width:1200px;margin:0 auto}
+.center{min-height:100%;display:flex;flex-direction:column;justify-content:center}
+.marker{position:absolute;top:18px;right:18px;width:46px;height:46px;display:grid;place-items:center;border:1px solid var(--indigo);border-radius:var(--r);font:400 20px/1 var(--display);color:var(--indigo);letter-spacing:.03em}
+.indigo .marker{border-color:var(--white);color:var(--white)}
+
+.kicker{font:600 13px/1.2 var(--body);letter-spacing:.1em;text-transform:uppercase;color:var(--indigo);margin:0 0 14px}
+.indigo .kicker{color:var(--white)}
+h1,h2,h3{font-family:var(--display);font-weight:400;text-transform:uppercase;letter-spacing:.02em;margin:0}
+h1{font-size:clamp(56px,10vw,133px);line-height:.86}
+h2{font-size:clamp(40px,6vw,76px);line-height:.9;color:var(--indigo);margin-bottom:28px}
+h3{font-size:clamp(22px,2.2vw,29px);line-height:.95;color:var(--indigo)}
+.indigo h1,.indigo h2,.indigo h3{color:var(--white)}
+.lead{font-size:clamp(18px,1.8vw,24px);line-height:1.3;max-width:760px;margin:22px 0 0}
+.muted{color:#5c5c5c;font-weight:300}
+.indigo .muted{color:#d9d4ff}
+.indigo .idcard .muted{color:#5c5c5c}
+.small{font-size:14px}
+
+/* tablas */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--indigo);border-radius:var(--r);background:var(--white)}
+table{width:100%;border-collapse:collapse;font-size:15px;line-height:1.4}
+th,td{text-align:left;vertical-align:top;padding:12px 14px;border-bottom:1px solid var(--grid)}
+tr:last-child td,tr:last-child th{border-bottom:0}
+thead th{font:600 12px/1.2 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--white);background:var(--indigo);border-bottom:0;white-space:nowrap}
+tbody th{font-weight:600;color:var(--indigo)}
+td input,td textarea,td select,.field input,.field textarea,.field select{width:100%;background:var(--white);border:1px solid var(--mist);border-radius:var(--r);padding:10px 12px;font-size:15px;color:var(--ink)}
+td textarea,.field textarea{min-height:64px;resize:vertical;line-height:1.4}
+td input:focus,td textarea:focus,td select:focus,.field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--indigo);box-shadow:inset 0 0 0 1px var(--indigo)}
+::placeholder{color:#a8a8a8}
+.fill td{padding:8px 10px}
+.fill tbody th{width:34%}
+.fill.five tbody th{width:22%}
+.fill.five table{min-width:860px}
+
+/* filas numeradas */
+.rows{border-top:1px solid var(--grid)}
+.row{display:grid;grid-template-columns:52px 1fr;gap:18px;align-items:start;padding:16px 0;border-bottom:1px solid var(--grid)}
+.row .n{width:40px;height:40px;display:grid;place-items:center;border:1px solid var(--indigo);border-radius:var(--r);font:400 17px/1 var(--display);color:var(--indigo)}
+.row h3{color:var(--grid);transition:none}
+.row:hover h3,.row.lit h3{color:var(--indigo)}
+.row p{margin:6px 0 0;font-size:15px}
+
+/* tarjetas */
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.g5{grid-template-columns:repeat(5,minmax(0,1fr))}
+.card .btn{width:100%;margin-top:6px;min-height:38px;padding:8px 12px;font-size:12px}
+.card.plat{padding:18px}
+.card.plat h3{font-size:clamp(22px,2vw,28px)}
+.card.plat p{font-size:14px}
+.card{background:var(--white);border:1px solid var(--indigo);border-radius:var(--r);padding:24px;color:var(--ink)}
+.card.soft{border-color:var(--grid)}
+.card h3{margin-bottom:10px}
+.card p{margin:0 0 10px;font-size:15px}
+.tag{display:inline-block;border:1px solid var(--indigo);border-radius:var(--r);padding:4px 8px;font:600 11px/1 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--indigo);margin:0 6px 8px 0}
+
+/* prompts */
+.prompt{position:relative;border:1px solid var(--indigo);border-radius:var(--r);background:var(--bone);margin:0}
+.prompt .head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px 10px 16px;border-bottom:1px solid var(--indigo);background:var(--white);border-radius:var(--r) var(--r) 0 0}
+.prompt .head b{font:600 12px/1.2 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--indigo)}
+.prompt pre{margin:0;padding:16px;white-space:pre-wrap;word-break:break-word;font:400 14px/1.55 ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace;color:var(--ink);max-height:52vh;overflow:auto}
+.prompt.tall pre{max-height:none}
+.copy{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:6px 12px;border:1px solid var(--indigo);border-radius:var(--r);background:var(--white);color:var(--indigo);font:600 12px/1 var(--body);letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+.copy:hover{background:var(--indigo);color:var(--white)}
+.copy.ok{background:var(--indigo);color:var(--white)}
+.copy svg{width:15px;height:15px}
+.cmd{display:flex;flex-direction:column;align-items:flex-start;gap:8px;border:1px solid var(--grid);border-radius:var(--r);padding:6px 6px 6px 10px;background:var(--bone);margin:8px 0 12px}
+.cmd code{width:100%;font:400 12.5px/1.4 ui-monospace,Menlo,Consolas,monospace;word-break:break-all}
+.cmd .copy{min-height:32px;padding:6px 8px}
+
+/* portada */
+.cover{display:grid;grid-template-columns:1.25fr 1fr;gap:40px;align-items:center}
+.cover h1{font-size:clamp(48px,6.6vw,96px)}
+.sketch{background:var(--white);border:1px solid var(--white);border-radius:var(--r);padding:28px}
+.sketch svg{display:block;width:100%;height:auto}
+.idcard{background:var(--white);color:var(--ink);border-radius:var(--r);padding:22px;margin-top:28px;max-width:640px}
+.idcard .kicker{color:var(--indigo)}
+.field{display:block;margin:0 0 12px}
+.field span{display:block;font:600 12px/1.2 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--indigo);margin-bottom:6px}
+.inline2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+.statement h1{max-width:1000px}
+.steps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-top:36px}
+.step{border:1px solid var(--white);border-radius:var(--r);padding:16px}
+.step b{display:block;font:400 34px/.9 var(--display);margin-bottom:8px}
+.step span{font-size:15px}
+
+.big84{font:400 clamp(90px,16vw,200px)/.8 var(--display);color:var(--indigo)}
+
+/* pie */
+.foot{position:fixed;inset:auto 0 0 0;height:var(--foot);display:flex;align-items:center;gap:12px;padding:0 18px;background:var(--white);border-top:1px solid var(--indigo);z-index:20}
+.foot .count{font:400 18px/1 var(--display);color:var(--indigo);letter-spacing:.04em;min-width:76px;text-align:center}
+.prog{flex:1;height:4px;background:var(--mist);border-radius:var(--r);overflow:hidden}
+.prog i{display:block;height:100%;width:0;background:var(--indigo);transition:width .2s}
+.saved{font:600 11px/1.2 var(--body);letter-spacing:.08em;text-transform:uppercase;color:#7a7a7a;white-space:nowrap}
+
+/* índice */
+.index{position:fixed;inset:var(--bar) 0 var(--foot) 0;background:var(--indigo);color:var(--white);z-index:30;overflow:auto;padding:40px 24px;display:none}
+.index.on{display:block}
+.index ol{list-style:none;margin:0 auto;padding:0;max-width:1200px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.index button{width:100%;text-align:left;display:flex;gap:12px;align-items:center;border:1px solid var(--white);border-radius:var(--r);background:transparent;color:var(--white);padding:12px;cursor:pointer;font:600 13px/1.2 var(--body);letter-spacing:.05em;text-transform:uppercase}
+.index button b{font:400 20px/1 var(--display)}
+.index button:hover,.index button.cur{background:var(--white);color:var(--indigo)}
+
+.toast{position:fixed;left:50%;bottom:calc(var(--foot) + 16px);transform:translateX(-50%);background:var(--ink);color:var(--white);padding:12px 18px;border-radius:var(--r);font-size:14px;z-index:40;display:none;max-width:90vw}
+.toast.on{display:block}
+
+@media (max-width:980px){
+  .g4,.g5{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .g3,.cover{grid-template-columns:1fr}
+  .steps{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .index ol{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .block{display:none}
+}
+@media (max-width:640px){
+  .g2,.g4,.g5,.inline2{grid-template-columns:1fr}
+  .index ol{grid-template-columns:1fr}
+  .brand{display:none}
+  .top .btn.cta{margin-left:auto}
+  .slide{padding:64px 16px 40px}
+  .saved{display:none}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">Lab · Conocimiento expandido</div>
+  <div class="block" id="blocks" aria-label="Bloque actual"></div>
+  <button class="btn menu-btn" id="menuBtn" type="button" aria-label="Ver todas las diapositivas" aria-expanded="false">☰</button>
+  <button class="btn cta" type="button" data-save>Guardar respuestas</button>
+</header>
+
+<main class="deck" id="deck">
+
+<!-- 01 PORTADA -->
+<section class="slide indigo" data-block="Inicio" data-title="Portada">
+  <div class="marker">01</div>
+  <div class="inner center">
+    <div class="cover">
+      <div>
+        <p class="kicker">Centro de Ciencia Francisco José de Caldas · 26 nov 2026</p>
+        <h1>Laboratorio de conocimiento expandido</h1>
+        <p class="lead">Recursos educativos para el aula moderna</p>
+        <div class="idcard">
+          <p class="kicker">Antes de empezar: ¿quién eres?</p>
+          <label class="field"><span>Nombre y apellido</span><input id="nombre" data-group="participante" data-field="nombre" autocomplete="name" placeholder="Ej.: Ana María Gómez"></label>
+          <div class="inline2">
+            <label class="field"><span>Institución</span><input data-group="participante" data-field="institucion" placeholder="Universidad, colegio…"></label>
+            <label class="field"><span>Área o asignatura</span><input data-group="participante" data-field="area" placeholder="Historia, física…"></label>
+          </div>
+          <p class="small muted" style="margin:4px 0 0">Tus respuestas se guardan en este navegador. Al final las descargas en un archivo con tu nombre.</p>
+        </div>
+      </div>
+      <div class="sketch" aria-hidden="true">
+        <svg viewBox="0 0 400 300" fill="none" stroke="#212121" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M40 60 L150 52 L158 232 L46 240 Z"/>
+          <path d="M60 86 L136 81 M62 106 L138 101 M63 126 L120 123 M64 146 L139 142 M66 166 L112 164"/>
+          <path d="M70 190 q20 -24 40 0 t40 0" stroke="#1f00ff"/>
+          <path d="M172 150 C200 132 214 132 236 146" stroke="#1f00ff"/>
+          <path d="M226 136 L238 147 L224 156" stroke="#1f00ff"/>
+          <rect x="258" y="58" width="104" height="186" rx="12"/>
+          <path d="M296 72 h28"/>
+          <circle cx="310" cy="228" r="6"/>
+          <circle cx="310" cy="150" r="7" fill="#ff622b" stroke="#ff622b"/>
+          <circle cx="310" cy="150" r="22" stroke="#1f00ff"/>
+          <circle cx="310" cy="150" r="40" stroke="#1f00ff" stroke-dasharray="6 6"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 02 EXPLORACIÓN -->
+<section class="slide indigo statement" data-block="02 Exploración" data-title="¿Qué no puede mostrar el papel?">
+  <div class="marker">02</div>
+  <div class="inner center">
+    <p class="kicker">Bloque 02 · Exploración</p>
+    <h1>¿Qué no puede mostrar el papel?</h1>
+    <p class="lead muted">Piensa en tu material. Esa respuesta es el punto de partida de todo el laboratorio.</p>
+  </div>
+</section>
+
+<!-- 03 MAPA DE LENGUAJES -->
+<section class="slide light" data-block="02 Exploración" data-title="Mapa de lenguajes">
+  <div class="marker">02</div>
+  <div class="inner">
+    <p class="kicker">Exploración</p>
+    <h2>Mapa de lenguajes</h2>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Lenguaje</th><th>Qué logra en el aprendizaje</th><th>Del papel a…</th></tr></thead>
+        <tbody>
+          <tr><th>Animación paso a paso</th><td>Ver procesos que el papel congela</td><td>Un diagrama de proceso se vuelve secuencia con botón “siguiente”</td></tr>
+          <tr><th>Simulación con controles</th><td>Predecir y comprobar “qué pasa si”</td><td>Una fórmula o tabla se vuelve laboratorio de variables</td></tr>
+          <tr><th>Modelo explorable por partes</th><td>Descomponer y recomponer</td><td>Un gráfico en blanco y negro se vuelve versión con capas y fichas</td></tr>
+          <tr><th>Comparadores y zoom de escalas</th><td>Dimensionar y contrastar</td><td>Un antes y después con deslizador</td></tr>
+          <tr><th>Líneas de tiempo, mapas y redes</th><td>Ubicar en el tiempo, el espacio y las relaciones</td><td>Un texto de historia se vuelve línea de tiempo con personajes</td></tr>
+          <tr><th>Práctica y autoevaluación</th><td>Recuperar con retroalimentación</td><td>Las preguntas de la guía se vuelven quiz, ordenar o etiquetar</td></tr>
+          <tr><th>Juegos y concursos</th><td>Motivación y participación</td><td>Las mismas preguntas se vuelven trivia por equipos en un tablero táctil</td></tr>
+          <tr><th>Conversación con IA</th><td>Argumentar y razonar</td><td>Una lectura de filosofía se vuelve debate socrático o aventura narrativa</td></tr>
+          <tr><th>Datos del territorio</th><td>Leer datos locales</td><td>Una tabla se vuelve mapa o tablero de control</td></tr>
+          <tr><th>Puente papel y pantalla</th><td>No abandonar el papel</td><td>Un código QR en la fotocopia la convierte en puerta de entrada</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- 04 PRINCIPIOS -->
+<section class="slide light" data-block="02 Exploración" data-title="Principios de partida">
+  <div class="marker">02</div>
+  <div class="inner">
+    <p class="kicker">Exploración</p>
+    <h2>Siete principios de partida</h2>
+    <div class="rows">
+      <div class="row"><div class="n">01</div><div><h3>Todo parte de una pregunta</h3><p>¿Qué no puede mostrar el papel?</p></div></div>
+      <div class="row"><div class="n">02</div><div><h3>El brief pesa más que el modelo</h3><p>La precisión del prompt decide la calidad del resultado.</p></div></div>
+      <div class="row"><div class="n">03</div><div><h3>Una idea, una interacción</h3><p>Un recurso, una acción principal.</p></div></div>
+      <div class="row"><div class="n">04</div><div><h3>Primero la experiencia</h3><p>Las restricciones se suman cuando aparecen los problemas.</p></div></div>
+      <div class="row"><div class="n">05</div><div><h3>Celular desde el primer prompt</h3><p>Es la pantalla que tienen los estudiantes.</p></div></div>
+      <div class="row"><div class="n">06</div><div><h3>La IA escribe, el docente verifica</h3><p>Todo contenido se contrasta con una fuente.</p></div></div>
+      <div class="row"><div class="n">07</div><div><h3>El recurso se acompaña</h3><p>Quiz, guía imprimible, tarjetas de estudio.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 05 CELULAR -->
+<section class="slide fog" data-block="02 Exploración" data-title="La restricción del celular">
+  <div class="marker">02</div>
+  <div class="inner">
+    <p class="kicker">Exploración</p>
+    <h2>La restricción del celular</h2>
+    <div class="grid g3">
+      <div class="card"><h3>Un solo HTML</h3><p>Sin librerías ni imágenes externas. Funciona con mala conexión.</p></div>
+      <div class="card"><h3>Táctil</h3><p>Nada depende del cursor. Botones de al menos 44 px.</p></div>
+      <div class="card"><h3>Vertical</h3><p>Diseño que se adapta al ancho de la pantalla.</p></div>
+      <div class="card"><h3>Liviano</h3><p>Modelos 3D de 2 MB como máximo, para teléfonos viejos.</p></div>
+      <div class="card"><h3>RA como extra</h3><p>La realidad aumentada solo funciona en equipos compatibles.</p></div>
+      <div class="card"><h3>Sonido apagado</h3><p>Encendido solo si el usuario lo pide.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 06 PLATAFORMAS -->
+<section class="slide light" data-block="02 Exploración" data-title="Cinco plataformas, un método">
+  <div class="marker">02</div>
+  <div class="inner">
+    <p class="kicker">Exploración</p>
+    <h2>Cinco plataformas, un método</h2>
+    <div class="grid g5">
+      <div class="card plat"><span class="tag">Canvas</span><h3>ChatGPT</h3><p>Muestra HTML y React en vivo y permite compartir lo generado.</p><a class="btn ghost" href="https://chatgpt.com" target="_blank" rel="noopener">Abrir ChatGPT ↗</a></div>
+      <div class="card plat"><span class="tag">Canvas</span><h3>Gemini</h3><p>Vista previa, código y consola de errores. Gratis con cuenta de Google.</p><a class="btn ghost" href="https://gemini.google.com" target="_blank" rel="noopener">Abrir Gemini ↗</a></div>
+      <div class="card plat"><span class="tag">Artifacts</span><h3>Claude</h3><p>Genera recursos interactivos en una ventana aparte, listos para usar.</p><a class="btn ghost" href="https://claude.ai" target="_blank" rel="noopener">Abrir Claude ↗</a></div>
+      <div class="card plat"><span class="tag">Botón Run</span><h3>DeepSeek</h3><p>Escribe el HTML y un botón Run lo previsualiza; se copia o descarga el código.</p><a class="btn ghost" href="https://chat.deepseek.com" target="_blank" rel="noopener">Abrir DeepSeek ↗</a></div>
+      <div class="card plat"><span class="tag">Web Dev</span><h3>Qwen</h3><p>Su modo “Web Dev” genera la página desde una sola instrucción, con vista previa.</p><a class="btn ghost" href="https://chat.qwen.ai" target="_blank" rel="noopener">Abrir Qwen ↗</a></div>
+    </div>
+    <p class="lead">Cambia el nombre de la vista previa. <strong style="color:var(--indigo)">El prompt es el mismo.</strong></p>
+  </div>
+</section>
+
+<!-- 07 PROMPT INICIAL -->
+<section class="slide indigo statement" data-block="03 Prompt inicial" data-title="Un prompt, cinco plataformas">
+  <div class="marker">03</div>
+  <div class="inner center">
+    <p class="kicker">Bloque 03 · Prompt inicial</p>
+    <h1>Un prompt.<br>Cinco plataformas.</h1>
+    <p class="lead muted">Simulación de ondas sísmicas P y S. ¿Qué tan lejos fue el sismo?</p>
+  </div>
+</section>
+
+<!-- 08 ANATOMÍA -->
+<section class="slide light" data-block="03 Prompt inicial" data-title="Anatomía del prompt">
+  <div class="marker">03</div>
+  <div class="inner">
+    <p class="kicker">Prompt inicial</p>
+    <h2>Anatomía del prompt</h2>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Parte</th><th>Qué contiene</th><th>Por qué importa</th></tr></thead>
+        <tbody>
+          <tr><th>1. Rol y público</th><td>Quién usa el recurso y con qué nivel previo</td><td>Ajusta el lenguaje y la profundidad</td></tr>
+          <tr><th>2. Objetivo de aprendizaje</th><td>Lo que el estudiante debe entender al final</td><td>Evita una simulación vistosa pero sin propósito</td></tr>
+          <tr><th>3. Experiencia</th><td>Qué ve, qué toca y cómo responde el recurso</td><td>Es el diseño de la interacción</td></tr>
+          <tr><th>4. Contenido científico</th><td>Valores y reglas correctos, dictados por el docente</td><td>La IA escribe, el docente es la autoridad: reduce errores</td></tr>
+          <tr><th>5. Restricciones técnicas</th><td>Un solo HTML, celular, sin internet, táctil</td><td>Previene la pantalla en blanco y lo que falla en el celular</td></tr>
+          <tr><th>6. Estética</th><td>Estilo, contraste, idioma</td><td>Evita lo genérico y asegura legibilidad</td></tr>
+          <tr><th>7. Entrega</th><td>Qué devuelve y cómo se prueba</td><td>Obtiene algo listo para abrir</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- 09 EL PROMPT -->
+<section class="slide fog" data-block="03 Prompt inicial" data-title="El prompt: ondas P y S">
+  <div class="marker">03</div>
+  <div class="inner">
+    <p class="kicker">Copia · pega · genera</p>
+    <h2>El prompt: ondas P y S</h2>
+    <figure class="prompt tall">
+      <div class="head"><b>Prompt inicial</b><button class="copy" type="button">Copiar</button></div>
+<pre>ROL Y PÚBLICO
+Eres un diseñador de recursos educativos interactivos. Crea un recurso para estudiantes de secundaria y primeros semestres universitarios, sin conocimientos previos de sismología.
+
+OBJETIVO DE APRENDIZAJE
+Que el estudiante entienda por qué en un sismo llegan primero las ondas P y después las S, y cómo la diferencia de tiempo entre ambas permite calcular a qué distancia ocurrió el sismo.
+
+EXPERIENCIA
+- Un mapa esquemático de 200 × 140 km, visto desde arriba, con 3 estaciones sismológicas fijas (A, B y C).
+- El usuario toca o arrastra el mapa para mover el epicentro.
+- Un botón "Sismo" lanza la animación: dos frentes de onda circulares salen del epicentro. La onda P es rápida, de línea continua y azul. La onda S es más lenta, de línea punteada y naranja.
+- Cada estación se marca cuando llega cada onda. Debajo del mapa, un sismograma por estación: primero una oscilación pequeña (P) y después una más grande (S).
+- Una tabla muestra por estación: distancia, tiempo de llegada de P, de S y la diferencia S−P.
+- Botones de velocidad (1×, 2×, 4×) y un botón "Reiniciar".
+
+CONTENIDO CIENTÍFICO (úsalo tal cual)
+- Velocidad de P: 6,0 km/s. Velocidad de S: 3,5 km/s. Medio uniforme y sismo en superficie.
+- Distancia ≈ 8,4 × (tS − tP), con la diferencia en segundos y la distancia en km.
+- Aclara en pantalla que es un modelo simplificado.
+
+RESTRICCIONES TÉCNICAS
+- Un solo archivo HTML con el CSS y el JavaScript adentro. Sin librerías ni imágenes externas; debe funcionar sin internet.
+- Debe verse y funcionar bien en un celular en vertical: diseño adaptable, botones de al menos 44 px y nada que dependa de pasar el cursor por encima.
+- Usa Pointer Events (táctil y mouse) y evita que el dedo desplace la página al arrastrar sobre el mapa.
+- Anima con requestAnimationFrame. No uses localStorage.
+
+ESTÉTICA
+Limpia y sobria, fondo claro, texto grande y buen contraste. No dependas solo del color: diferencia P y S también por el estilo de línea. Interfaz en español.
+
+ENTREGA
+Devuélveme el archivo HTML completo, listo para abrir, y al final tres líneas explicando cómo probarlo.</pre>
+    </figure>
+  </div>
+</section>
+
+<!-- 10 FICHA DE COMPARACIÓN -->
+<section class="slide light" data-block="03 Prompt inicial" data-title="Ficha de comparación">
+  <div class="marker">03</div>
+  <div class="inner">
+    <p class="kicker">Para llenar · en trío o en pareja · elijan las plataformas que prueben</p>
+    <h2>Ficha de comparación</h2>
+    <div class="tbl-wrap fill five">
+      <table>
+        <thead><tr><th>Criterio</th><th>ChatGPT</th><th>Gemini</th><th>Claude</th><th>DeepSeek</th><th>Qwen</th></tr></thead>
+        <tbody>
+          <tr><th>Segundos que tardó en generar</th><td><input data-group="comparacion" data-field="tiempo.chatgpt" inputmode="numeric"></td><td><input data-group="comparacion" data-field="tiempo.gemini" inputmode="numeric"></td><td><input data-group="comparacion" data-field="tiempo.claude" inputmode="numeric"></td><td><input data-group="comparacion" data-field="tiempo.deepseek" inputmode="numeric"></td><td><input data-group="comparacion" data-field="tiempo.qwen" inputmode="numeric"></td></tr>
+          <tr><th>¿Funcionó a la primera?</th><td><input data-group="comparacion" data-field="primera.chatgpt"></td><td><input data-group="comparacion" data-field="primera.gemini"></td><td><input data-group="comparacion" data-field="primera.claude"></td><td><input data-group="comparacion" data-field="primera.deepseek"></td><td><input data-group="comparacion" data-field="primera.qwen"></td></tr>
+          <tr><th>¿Se ve bien en el celular?</th><td><input data-group="comparacion" data-field="celular.chatgpt"></td><td><input data-group="comparacion" data-field="celular.gemini"></td><td><input data-group="comparacion" data-field="celular.claude"></td><td><input data-group="comparacion" data-field="celular.deepseek"></td><td><input data-group="comparacion" data-field="celular.qwen"></td></tr>
+          <tr><th>¿P llega antes que S?</th><td><input data-group="comparacion" data-field="p_antes_s.chatgpt"></td><td><input data-group="comparacion" data-field="p_antes_s.gemini"></td><td><input data-group="comparacion" data-field="p_antes_s.claude"></td><td><input data-group="comparacion" data-field="p_antes_s.deepseek"></td><td><input data-group="comparacion" data-field="p_antes_s.qwen"></td></tr>
+          <tr><th>¿Se puede compartir o exportar el HTML?</th><td><input data-group="comparacion" data-field="exportar.chatgpt"></td><td><input data-group="comparacion" data-field="exportar.gemini"></td><td><input data-group="comparacion" data-field="exportar.claude"></td><td><input data-group="comparacion" data-field="exportar.deepseek"></td><td><input data-group="comparacion" data-field="exportar.qwen"></td></tr>
+          <tr><th>Mensajes gastados</th><td><input data-group="comparacion" data-field="mensajes.chatgpt" inputmode="numeric"></td><td><input data-group="comparacion" data-field="mensajes.gemini" inputmode="numeric"></td><td><input data-group="comparacion" data-field="mensajes.claude" inputmode="numeric"></td><td><input data-group="comparacion" data-field="mensajes.deepseek" inputmode="numeric"></td><td><input data-group="comparacion" data-field="mensajes.qwen" inputmode="numeric"></td></tr>
+          <tr><th>Observaciones</th><td><textarea data-group="comparacion" data-field="observaciones.chatgpt"></textarea></td><td><textarea data-group="comparacion" data-field="observaciones.gemini"></textarea></td><td><textarea data-group="comparacion" data-field="observaciones.claude"></textarea></td><td><textarea data-group="comparacion" data-field="observaciones.deepseek"></textarea></td><td><textarea data-group="comparacion" data-field="observaciones.qwen"></textarea></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- 11 VERIFICACIÓN -->
+<section class="slide light" data-block="03 Prompt inicial" data-title="La prueba del 84">
+  <div class="marker">03</div>
+  <div class="inner">
+    <p class="kicker">La IA escribe, el docente comprueba</p>
+    <div class="grid g2" style="align-items:center">
+      <div>
+        <div class="big84">84 km</div>
+        <p class="lead">Epicentro a 84 km de una estación → <strong style="color:var(--indigo)">S − P ≈ 10 s</strong>.<br><span class="muted">84 ÷ 8,4 = 10</span></p>
+      </div>
+      <div class="rows">
+        <div class="row lit"><div class="n">✓</div><div><h3>P siempre antes que S</h3></div></div>
+        <div class="row lit"><div class="n">✓</div><div><h3>S oscila más que P</h3></div></div>
+        <div class="row lit"><div class="n">✓</div><div><h3>El dedo mueve el epicentro</h3></div></div>
+        <div class="row lit"><div class="n">✓</div><div><h3>Sin scroll horizontal</h3></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 12 ITERACIÓN 1-4 -->
+<section class="slide fog" data-block="03 Prompt inicial" data-title="Prompts de iteración 1–4">
+  <div class="marker">03</div>
+  <div class="inner">
+    <p class="kicker">Misma conversación · uno por vez</p>
+    <h2>Expandir sin empezar de cero · 1/2</h2>
+    <div class="grid g2">
+      <figure class="prompt"><div class="head"><b>01 · Reto de triangulación</b><button class="copy" type="button">Copiar</button></div>
+<pre>Añade un modo "Reto": oculta el epicentro, elige uno al azar y muestra solo la diferencia S−P de cada estación. El usuario toca el mapa donde cree que ocurrió el sismo. Al confirmar, revela el epicentro real, dibuja los tres círculos de distancia y muestra el error en km. Mantén todo en el mismo archivo HTML.</pre></figure>
+      <figure class="prompt"><div class="head"><b>02 · Autoevaluación</b><button class="copy" type="button">Copiar</button></div>
+<pre>Agrega una pestaña "Quiz" con 5 preguntas de opción múltiple sobre ondas P y S, con retroalimentación inmediata y puntaje final. Guarda las preguntas en un arreglo dentro del código, fácil de editar. Que se vea bien en celular.</pre></figure>
+      <figure class="prompt"><div class="head"><b>03 · Material complementario</b><button class="copy" type="button">Copiar</button></div>
+<pre>A partir de esta simulación, genera: (1) una guía imprimible de una página con la explicación, la regla de 8,4 km por segundo y tres ejercicios con respuestas; (2) diez tarjetas de estudio con pregunta y respuesta.</pre></figure>
+      <figure class="prompt"><div class="head"><b>04 · Modo clase</b><button class="copy" type="button">Copiar</button></div>
+<pre>Agrega un "Modo clase" para proyectar: tipografía más grande, un botón para ocultar la tabla y mostrar solo el mapa y los sismogramas, y colores con aún más contraste.</pre></figure>
+    </div>
+  </div>
+</section>
+
+<!-- 13 ITERACIÓN 5-8 -->
+<section class="slide fog" data-block="03 Prompt inicial" data-title="Prompts de iteración 5–8">
+  <div class="marker">03</div>
+  <div class="inner">
+    <p class="kicker">Misma conversación · uno por vez</p>
+    <h2>Expandir sin empezar de cero · 2/2</h2>
+    <div class="grid g2">
+      <figure class="prompt"><div class="head"><b>05 · Concurso por equipos</b><button class="copy" type="button">Copiar</button></div>
+<pre>Convierte el Reto en un concurso para dos equipos en un mismo dispositivo: marcador, turnos, temporizador de 30 segundos por ronda y mensaje del equipo ganador tras 5 rondas. Botones grandes para pantalla táctil.</pre></figure>
+      <figure class="prompt"><div class="head"><b>06 · Accesibilidad</b><button class="copy" type="button">Copiar</button></div>
+<pre>Revisa la accesibilidad: contraste, tamaños de texto, navegación con teclado y descripciones para lectores de pantalla. Corrige lo que encuentres y dime qué cambiaste.</pre></figure>
+      <figure class="prompt"><div class="head"><b>07 · Depuración</b><button class="copy" type="button">Copiar</button></div>
+<pre>Esto falla en mi celular: [describe qué pasa o pega el mensaje de error]. Encuentra la causa, corrígela sin cambiar lo demás y devuélveme el archivo completo.</pre></figure>
+      <figure class="prompt"><div class="head"><b>08 · Verificación cruzada</b><button class="copy" type="button">Copiar</button></div>
+<pre>Revisa tu propio código: dime las coordenadas de las tres estaciones y comprueba con un ejemplo numérico que la distancia coincide con 8,4 × (tS − tP) y que P llega antes que S en todas las estaciones. Muestra el cálculo.</pre></figure>
+    </div>
+  </div>
+</section>
+
+<!-- 14 CAJA DE HERRAMIENTAS -->
+<section class="slide light" data-block="04 Herramientas" data-title="Caja de herramientas">
+  <div class="marker">04</div>
+  <div class="inner">
+    <p class="kicker">Bloque 04 · No es solo prompts</p>
+    <h2>Cuatro skills con reglas de dibujo</h2>
+    <div class="grid g4">
+      <div class="card">
+        <span class="tag">Animación</span><h3>stick-scene</h3>
+        <p>Figuras de palitos que explican un proceso. Propone 2–3 metáforas y revisa cada cuadro.</p>
+        <p class="small muted">Canvas sin librerías · MIT</p>
+        <div class="cmd"><code>npx skills add nilbuild/stick-scene</code><button class="copy" type="button" aria-label="Copiar comando">Copiar</button></div>
+        <a class="small" href="https://github.com/nilbuild/stick-scene" target="_blank" rel="noopener">Repositorio →</a>
+      </div>
+      <div class="card">
+        <span class="tag">Modelo explorable</span><h3>anatomy</h3>
+        <p>La idea como máquina isométrica interactiva. Piezas sólidas, nada flotante, 40+ partes.</p>
+        <p class="small muted">HTML + SVG · MIT · 30–90 min por figura</p>
+        <div class="cmd"><code>hermes skills install official/creative/anatomy</code><button class="copy" type="button" aria-label="Copiar comando">Copiar</button></div>
+        <a class="small" href="https://hermes-agent.nousresearch.com/docs/user-guide/skills/optional/creative/creative-anatomy" target="_blank" rel="noopener">Documentación →</a>
+      </div>
+      <div class="card">
+        <span class="tag">Simulación</span><h3>microsim-generator</h3>
+        <p>Simulaciones educativas: elige el motor según el concepto (p5.js, Chart.js, Plotly, mapas, redes, líneas de tiempo).</p>
+        <p class="small muted">HTML para incrustar · ancho adaptable</p>
+        <div class="cmd"><code>npx skills add https://github.com/dmccreary/ibook-skills --skill microsim-generator</code><button class="copy" type="button" aria-label="Copiar comando">Copiar</button></div>
+        <a class="small" href="https://skills.sh/dmccreary/claude-skills/microsim-generator" target="_blank" rel="noopener">Ficha del skill →</a>
+      </div>
+      <div class="card">
+        <span class="tag">Infografía</span><h3>infographic-creator</h3>
+        <p>Texto a infografía con ~200 plantillas: líneas de tiempo, mapas mentales, comparaciones, DOFA.</p>
+        <p class="small muted">HTML + exporta SVG · AntV · MIT</p>
+        <div class="cmd"><code>npx skills add https://github.com/antvis/chart-visualization-skills --skill infographic-creator</code><button class="copy" type="button" aria-label="Copiar comando">Copiar</button></div>
+        <a class="small" href="https://github.com/antvis/Infographic" target="_blank" rel="noopener">Repositorio →</a>
+      </div>
+    </div>
+    <p class="small muted" style="margin-top:18px">Formato abierto Agent Skills: se instalan en agentes con terminal o editor (Claude Code, Codex, Cursor, Gemini CLI…), no en el chat.</p>
+  </div>
+</section>
+
+<!-- 15 TRANSFORMACIÓN -->
+<section class="slide indigo statement" data-block="05 Transformación" data-title="Tu material, expandido">
+  <div class="marker">05</div>
+  <div class="inner center">
+    <p class="kicker">Bloque 05 · Transformación · 30 min</p>
+    <h1>Tu material, expandido</h1>
+    <div class="steps">
+      <div class="step"><b>05′</b><span>Diagnóstico y brief</span></div>
+      <div class="step"><b>08′</b><span>Generar con tu material</span></div>
+      <div class="step"><b>10′</b><span>Iterar: mejorar, evaluar, corregir</span></div>
+      <div class="step"><b>05′</b><span>Probar en el celular</span></div>
+      <div class="step"><b>02′</b><span>Guardar el archivo</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- 16 FICHA DE BRIEF -->
+<section class="slide light" data-block="05 Transformación" data-title="Ficha de brief">
+  <div class="marker">05</div>
+  <div class="inner">
+    <p class="kicker">Para llenar · las mismas partes de la anatomía del prompt</p>
+    <h2>Ficha de brief</h2>
+    <div class="tbl-wrap fill">
+      <table>
+        <thead><tr><th>Campo</th><th>Pregunta guía</th><th>Tu respuesta</th></tr></thead>
+        <tbody>
+          <tr><th>Lo que el papel no puede mostrar</th><td>¿Qué parte de mi material queda “congelada” en la hoja?</td><td><textarea data-group="brief" data-field="papel_no_muestra"></textarea></td></tr>
+          <tr><th>1. Rol y público</th><td>¿Quiénes usarán el recurso y qué saben ya?</td><td><textarea data-group="brief" data-field="rol_publico"></textarea></td></tr>
+          <tr><th>2. Objetivo de aprendizaje</th><td>¿Qué debe entender el estudiante al terminar?</td><td><textarea data-group="brief" data-field="objetivo"></textarea></td></tr>
+          <tr><th>3. Experiencia</th><td>¿Qué ve, qué toca y cómo responde?</td><td><textarea data-group="brief" data-field="experiencia"></textarea></td></tr>
+          <tr><th>4. Contenido científico</th><td>¿Qué valores, reglas o datos correctos debe usar tal cual? ¿Qué material adjunto?</td><td><textarea data-group="brief" data-field="contenido_cientifico"></textarea></td></tr>
+          <tr><th>5. Restricciones técnicas</th><td>Un solo HTML, celular en vertical, sin internet, táctil. ¿Algo más?</td><td><textarea data-group="brief" data-field="restricciones"></textarea></td></tr>
+          <tr><th>6. Estética</th><td>¿Cómo quiero que se vea? Estilo, contraste, idioma</td><td><textarea data-group="brief" data-field="estetica"></textarea></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small muted" style="margin-top:12px">La 7.ª parte, Entrega, ya viene escrita en el prompt base.</p>
+  </div>
+</section>
+
+<!-- 17 PROMPT BASE + EXPERIENCIAS -->
+<section class="slide fog" data-block="05 Transformación" data-title="Prompt base y experiencias">
+  <div class="marker">05</div>
+  <div class="inner">
+    <p class="kicker">Pega con tu material adjunto · mismas partes que la anatomía</p>
+    <h2>Prompt base</h2>
+    <figure class="prompt" style="margin-bottom:16px"><div class="head"><b>Prompt base · las 7 partes</b><button class="copy" type="button">Copiar</button></div>
+<pre>Voy a adjuntarte un material de mi clase (foto, PDF o texto). Conviértelo en un recurso interactivo siguiendo este brief.
+
+ROL Y PÚBLICO
+Eres un diseñador de recursos educativos interactivos. Crea un recurso para [quiénes lo usarán: nivel y conocimientos previos].
+
+OBJETIVO DE APRENDIZAJE
+[Qué debe entender el estudiante al terminar]
+
+EXPERIENCIA
+[Qué ve, qué toca y cómo responde el recurso]
+
+CONTENIDO CIENTÍFICO (úsalo tal cual)
+Usa SOLO lo que aparece en el material adjunto y estos valores, reglas o datos correctos: [completar]. Si falta algo, pregúntame en lugar de inventarlo.
+
+RESTRICCIONES TÉCNICAS
+- Un solo archivo HTML con el CSS y el JavaScript adentro. Sin librerías ni imágenes externas; debe funcionar sin internet.
+- Debe verse y funcionar bien en un celular en vertical: diseño adaptable, botones de al menos 44 px y nada que dependa de pasar el cursor por encima.
+- [Otras restricciones, si las hay]
+
+ESTÉTICA
+[Estilo, contraste, tamaño de texto]. No dependas solo del color. Interfaz en español.
+
+ENTREGA
+Devuélveme el archivo HTML completo, listo para abrir, y al final tres líneas explicando cómo probarlo.</pre></figure>
+    <h3 style="margin:26px 0 12px">Para el campo EXPERIENCIA, según tu material</h3>
+    <div class="grid g3">
+      <figure class="prompt"><div class="head"><b>Texto (historia, lectura)</b><button class="copy" type="button">Copiar</button></div>
+<pre>Una línea de tiempo explorable con los hechos del texto. Al tocar un hecho se abre una ficha con el resumen, el lugar y por qué importa. Un botón "Ponme a prueba" mezcla 5 preguntas sobre el texto con retroalimentación inmediata.</pre></figure>
+      <figure class="prompt"><div class="head"><b>Guía de ejercicios</b><button class="copy" type="button">Copiar</button></div>
+<pre>Un simulador con 2 o 3 controles (deslizadores) que muestre cómo cambia el resultado de los ejercicios de la guía, y un modo práctica que proponga valores, deje responder y revele la solución paso a paso.</pre></figure>
+      <figure class="prompt"><div class="head"><b>Gráfico en blanco y negro</b><button class="copy" type="button">Copiar</button></div>
+<pre>Reconstruye el gráfico adjunto como una versión interactiva: al tocar cada parte aparece su nombre y una ficha; botones para mostrar u ocultar capas; y una animación de "cómo funciona" paso a paso.</pre></figure>
+    </div>
+  </div>
+</section>
+
+<!-- 18 JUEGOS DE ESCRITURA -->
+<section class="slide light" data-block="05 Transformación" data-title="Juegos de escritura con IA">
+  <div class="marker">05</div>
+  <div class="inner">
+    <p class="kicker">Se usan en el chat, no son HTML</p>
+    <h2>Juegos de escritura con IA</h2>
+    <div class="grid g2">
+      <figure class="prompt"><div class="head"><b>Tutor socrático · filosofía, historia</b><button class="copy" type="button">Copiar</button></div>
+<pre>Actúa como tutor socrático sobre [tema o texto adjunto]. Reglas: (1) nunca me des la respuesta y haz una sola pregunta por turno; (2) después de cada respuesta mía, dime qué parte es sólida y cuál es discutible, con un dato verificable del material adjunto; (3) marca con [DATO] lo que viene del material y con [HIPÓTESIS] lo que sea interpretación tuya; (4) si no sabes algo, dilo; (5) cada 5 turnos resume en 3 líneas lo que he argumentado. Empieza con una pregunta provocadora.</pre></figure>
+      <figure class="prompt"><div class="head"><b>Aventura de decisiones · historia</b><button class="copy" type="button">Copiar</button></div>
+<pre>Dirige una aventura narrativa de decisiones ambientada en [época y lugar del texto adjunto]. Yo interpreto a un personaje inventado. En cada turno: describe la situación en 4 líneas, dame 3 opciones y, cuando elija, muestra la consecuencia y un dato histórico verificable marcado como [DATO]. Los personajes históricos reales pueden mencionarse, pero no hablan ni se les atribuyen frases. Después de 6 turnos, evalúa mis decisiones con base en el material adjunto.</pre></figure>
+    </div>
+  </div>
+</section>
+
+<!-- 19 DESPLIEGUE -->
+<section class="slide indigo statement" data-block="06 Despliegue" data-title="Despliegue">
+  <div class="marker">06</div>
+  <div class="inner center">
+    <p class="kicker">Bloque 06 · Despliegue</p>
+    <h1>Del archivo al enlace</h1>
+    <p class="lead muted">Ten a mano el HTML que guardaste. Ahora toma el mando nuestro ingeniero.</p>
+  </div>
+</section>
+
+<!-- 20 ATLAS -->
+<section class="slide light" data-block="Cierre" data-title="Tarjeta del Atlas">
+  <div class="marker">07</div>
+  <div class="inner">
+    <p class="kicker">Para llenar · tu aporte al laboratorio</p>
+    <h2>Tarjeta del Atlas de lenguajes</h2>
+    <div class="tbl-wrap fill">
+      <table>
+        <thead><tr><th>Campo</th><th>Tu respuesta</th></tr></thead>
+        <tbody>
+          <tr><th>Nombre del lenguaje</th><td><input data-group="atlas" data-field="lenguaje" placeholder="Ej.: Línea de tiempo con dilemas"></td></tr>
+          <tr><th>Del papel a… (qué recurso se transformó y en qué)</th><td><textarea data-group="atlas" data-field="del_papel_a"></textarea></td></tr>
+          <tr><th>Plataforma usada</th><td><select data-group="atlas" data-field="plataforma"><option value="">Elige…</option><option>ChatGPT</option><option>Gemini</option><option>Claude</option><option>DeepSeek</option><option>Qwen</option><option>Varias</option><option>Otra</option></select></td></tr>
+          <tr><th>¿Funcionó en el celular?</th><td><select data-group="atlas" data-field="celular"><option value="">Elige…</option><option>Sí</option><option>En parte</option><option>No</option><option>No lo probé</option></select></td></tr>
+          <tr><th>Qué aprendí</th><td><textarea data-group="atlas" data-field="aprendizaje"></textarea></td></tr>
+          <tr><th>Enlace o nombre del archivo de mi prototipo</th><td><input data-group="atlas" data-field="prototipo" placeholder="https://… o mi-recurso.html"></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- 21 CIERRE -->
+<section class="slide indigo statement" data-block="Cierre" data-title="Cierre y guardar">
+  <div class="marker">07</div>
+  <div class="inner center">
+    <p class="kicker">Cierre</p>
+    <h1>¿Qué recurso tuyo ya no es una fotocopia?</h1>
+    <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:36px">
+      <button class="btn cta" type="button" data-save style="min-height:52px;padding:14px 28px;font-size:14px">Guardar respuestas</button>
+      <button class="btn ghost" type="button" id="saveTxt" style="min-height:52px">Versión para leer (.txt)</button>
+    </div>
+    <p class="lead muted small" id="fileHint" style="font-size:16px">El archivo se nombra con tu nombre. Envíalo a centrodeciencia.maker@ucaldas.edu.co.</p>
+  </div>
+</section>
+
+</main>
+
+<nav class="index" id="index" aria-label="Índice de diapositivas"><ol id="indexList"></ol></nav>
+
+<footer class="foot">
+  <button class="btn ghost" id="prev" type="button" aria-label="Anterior">←</button>
+  <div class="count" id="count">01 / 21</div>
+  <button class="btn ghost" id="next" type="button" aria-label="Siguiente">→</button>
+  <div class="prog" aria-hidden="true"><i id="bar"></i></div>
+  <span class="saved" id="saved">Sin cambios</span>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  'use strict';
+  var KEY = 'lab-conocimiento-expandido-2026';
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var blocks = ['Inicio','02 Exploración','03 Prompt inicial','04 Herramientas','05 Transformación','06 Despliegue','Cierre'];
+  var cur = 0, toastT = 0;
+  var $ = function(id){ return document.getElementById(id); };
+  var pad = function(n){ return (n < 10 ? '0' : '') + n; };
+
+  // ----- barra de bloques -----
+  var blocksEl = $('blocks');
+  blocks.forEach(function(b){ var s = document.createElement('span'); s.textContent = b.replace(/^\d+ /,''); s.dataset.b = b; blocksEl.appendChild(s); });
+
+  // ----- índice -----
+  var list = $('indexList');
+  slides.forEach(function(s, i){
+    var li = document.createElement('li'), b = document.createElement('button');
+    b.type = 'button';
+    b.innerHTML = '<b>' + pad(i+1) + '</b><span></span>';
+    b.querySelector('span').textContent = s.dataset.title;
+    b.addEventListener('click', function(){ go(i); toggleIndex(false); });
+    li.appendChild(b); list.appendChild(li);
+  });
+  function toggleIndex(on){
+    var el = $('index'); on = (on === undefined) ? !el.classList.contains('on') : on;
+    el.classList.toggle('on', on); $('menuBtn').setAttribute('aria-expanded', on ? 'true' : 'false');
+  }
+  $('menuBtn').addEventListener('click', function(){ toggleIndex(); });
+
+  // ----- navegación -----
+  function go(i){
+    i = Math.max(0, Math.min(slides.length - 1, i));
+    slides[cur].classList.remove('on');
+    cur = i;
+    var s = slides[cur];
+    s.classList.add('on'); s.scrollTop = 0;
+    $('count').textContent = pad(cur+1) + ' / ' + pad(slides.length);
+    $('bar').style.width = ((cur+1) / slides.length * 100) + '%';
+    Array.prototype.forEach.call(blocksEl.children, function(sp){ sp.classList.toggle('on', sp.dataset.b === s.dataset.block); });
+    Array.prototype.forEach.call(list.querySelectorAll('button'), function(b, k){ b.classList.toggle('cur', k === cur); });
+    $('prev').disabled = cur === 0; $('next').disabled = cur === slides.length - 1;
+    try { history.replaceState(null, '', '#' + (cur+1)); } catch(e) {}
+  }
+  $('prev').addEventListener('click', function(){ go(cur-1); });
+  $('next').addEventListener('click', function(){ go(cur+1); });
+  document.addEventListener('keydown', function(e){
+    var t = e.target.tagName;
+    if (t === 'INPUT' || t === 'TEXTAREA' || t === 'SELECT') return;
+    if (e.key === 'ArrowRight' || e.key === 'PageDown') { e.preventDefault(); go(cur+1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); go(cur-1); }
+    else if (e.key === 'Home') go(0);
+    else if (e.key === 'End') go(slides.length-1);
+    else if (e.key === 'Escape') toggleIndex(false);
+  });
+  var tx = null, ty = null;
+  $('deck').addEventListener('touchstart', function(e){ tx = e.touches[0].clientX; ty = e.touches[0].clientY; }, {passive:true});
+  $('deck').addEventListener('touchend', function(e){
+    if (tx === null) return;
+    var dx = e.changedTouches[0].clientX - tx, dy = e.changedTouches[0].clientY - ty;
+    if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.5) go(cur + (dx < 0 ? 1 : -1));
+    tx = ty = null;
+  });
+
+  // ----- copiar -----
+  var ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>';
+  function toast(msg){
+    var t = $('toast'); t.textContent = msg; t.classList.add('on');
+    clearTimeout(toastT); toastT = setTimeout(function(){ t.classList.remove('on'); }, 2600);
+  }
+  function fallbackCopy(text){
+    var ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly','');
+    ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select();
+    var ok = false; try { ok = document.execCommand('copy'); } catch(e) {}
+    document.body.removeChild(ta); return ok;
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('.copy'), function(btn){
+    var label = btn.textContent.trim() || 'Copiar';
+    btn.innerHTML = ICON + '<span>' + label + '</span>';
+    btn.addEventListener('click', function(){
+      var box = btn.closest('.prompt') || btn.closest('.cmd');
+      var src = box.querySelector('pre') || box.querySelector('code');
+      var text = src.textContent.replace(/^\n+|\s+$/g, '');
+      var done = function(){ btn.classList.add('ok'); btn.querySelector('span').textContent = 'Copiado'; setTimeout(function(){ btn.classList.remove('ok'); btn.querySelector('span').textContent = label; }, 1800); };
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(done, function(){ if (fallbackCopy(text)) done(); else toast('No se pudo copiar: selecciona el texto y usa Ctrl+C'); });
+      } else if (fallbackCopy(text)) done();
+      else toast('No se pudo copiar: selecciona el texto y usa Ctrl+C');
+    });
+  });
+
+  // ----- respuestas: guardado automático en el navegador -----
+  var fields = Array.prototype.slice.call(document.querySelectorAll('[data-field]'));
+  function collect(){
+    var out = {};
+    fields.forEach(function(f){
+      var g = f.dataset.group, path = f.dataset.field.split('.'), o = out[g] = out[g] || {};
+      for (var i = 0; i < path.length - 1; i++) o = o[path[i]] = o[path[i]] || {};
+      o[path[path.length-1]] = f.value.trim();
+    });
+    return out;
+  }
+  function flatKey(f){ return f.dataset.group + '.' + f.dataset.field; }
+  function persist(){
+    var flat = {}; fields.forEach(function(f){ flat[flatKey(f)] = f.value; });
+    try { localStorage.setItem(KEY, JSON.stringify(flat)); $('saved').textContent = 'Guardado en este navegador'; }
+    catch(e) { $('saved').textContent = 'Recuerda descargar tus respuestas'; }
+  }
+  try {
+    var prev = JSON.parse(localStorage.getItem(KEY) || 'null');
+    if (prev) { fields.forEach(function(f){ if (prev[flatKey(f)] != null) f.value = prev[flatKey(f)]; }); $('saved').textContent = 'Respuestas recuperadas'; }
+  } catch(e) {}
+  var pt = 0;
+  fields.forEach(function(f){ f.addEventListener('input', function(){ clearTimeout(pt); pt = setTimeout(persist, 400); }); f.addEventListener('change', persist); });
+
+  // ----- descarga con nombre propio -----
+  function slug(s){
+    return s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,60);
+  }
+  function needName(){
+    var n = $('nombre').value.trim();
+    if (!n) { go(0); setTimeout(function(){ $('nombre').focus(); }, 60); toast('Escribe tu nombre en la portada para guardar tus respuestas'); return null; }
+    return n;
+  }
+  function download(name, content, type){
+    var blob = new Blob([content], {type: type}), a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  }
+  function stamp(){ var d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()); }
+  function saveJson(){
+    var n = needName(); if (!n) return;
+    persist();
+    var data = { laboratorio: 'Laboratorio de conocimiento expandido: Recursos educativos para el aula moderna', lugar: 'Centro de Ciencia Francisco José de Caldas, Universidad de Manizales', fecha_taller: '2026-11-26', guardado: new Date().toISOString() };
+    var c = collect(); for (var k in c) data[k] = c[k];
+    var file = 'atlas_' + slug(n) + '_' + stamp() + '.json';
+    download(file, JSON.stringify(data, null, 2), 'application/json');
+    toast('Descargado: ' + file);
+  }
+  var LABELS = {
+    participante: ['PARTICIPANTE', {nombre:'Nombre', institucion:'Institución', area:'Área o asignatura'}],
+    comparacion: ['FICHA DE COMPARACIÓN', {tiempo:'Segundos que tardó en generar', primera:'¿Funcionó a la primera?', celular:'¿Se ve bien en el celular?', p_antes_s:'¿P llega antes que S?', exportar:'¿Se puede compartir o exportar el HTML?', mensajes:'Mensajes gastados', observaciones:'Observaciones'}],
+    brief: ['FICHA DE BRIEF', {papel_no_muestra:'Lo que el papel no puede mostrar', rol_publico:'1. Rol y público', objetivo:'2. Objetivo de aprendizaje', experiencia:'3. Experiencia', contenido_cientifico:'4. Contenido científico', restricciones:'5. Restricciones técnicas', estetica:'6. Estética'}],
+    atlas: ['TARJETA DEL ATLAS', {lenguaje:'Nombre del lenguaje', del_papel_a:'Del papel a…', plataforma:'Plataforma usada', celular:'¿Funcionó en el celular?', aprendizaje:'Qué aprendí', prototipo:'Prototipo'}]
+  };
+  var PLATS = {chatgpt:'ChatGPT', gemini:'Gemini', claude:'Claude', deepseek:'DeepSeek', qwen:'Qwen'};
+  var FILEHINT = 'El archivo se nombra con tu nombre. Envíalo a centrodeciencia.maker@ucaldas.edu.co.';
+  function buildTxt(compact){
+    var c = collect(), out = ['LABORATORIO DE CONOCIMIENTO EXPANDIDO', 'Recursos educativos para el aula moderna · 26 de noviembre de 2026', ''];
+    Object.keys(LABELS).forEach(function(g){
+      out.push(LABELS[g][0], '');
+      var lab = LABELS[g][1], vals = c[g] || {};
+      Object.keys(lab).forEach(function(k){
+        var v = vals[k];
+        if (v && typeof v === 'object') {
+          var any = Object.keys(PLATS).some(function(p){ return v[p]; });
+          if (compact && !any) return;
+          out.push(lab[k] + ':');
+          Object.keys(PLATS).forEach(function(p){ if (!compact || v[p]) out.push('  ' + PLATS[p] + ': ' + (v[p] || '—')); });
+        } else { if (compact && !v) return; out.push(lab[k] + ': ' + (v || '—')); }
+      });
+      out.push('');
+    });
+    return out.join('\n');
+  }
+  function saveTxt(){
+    var n = needName(); if (!n) return;
+    persist();
+    var file = 'atlas_' + slug(n) + '_' + stamp() + '.txt';
+    download(file, buildTxt(false), 'text/plain;charset=utf-8');
+    toast('Descargado: ' + file);
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-save]'), function(b){ b.addEventListener('click', saveJson); });
+  $('saveTxt').addEventListener('click', saveTxt);
+  $('nombre').addEventListener('input', function(){
+    var n = this.value.trim();
+    $('fileHint').textContent = n ? 'Se descargará como atlas_' + slug(n) + '_' + stamp() + '.json. Envíalo a centrodeciencia.maker@ucaldas.edu.co.' : FILEHINT;
+  });
+  if ($('nombre').value) $('nombre').dispatchEvent(new Event('input'));
+
+  // ----- inicio -----
+  window.addEventListener('hashchange', function(){ var k = parseInt((location.hash || '').slice(1), 10); if (!isNaN(k) && k - 1 !== cur) go(k - 1); });
+  var h = parseInt((location.hash || '').slice(1), 10);
+  slides[0].classList.add('on');
+  go(isNaN(h) ? 0 : h - 1);
+})();
+</script>
+</body>
+</html>

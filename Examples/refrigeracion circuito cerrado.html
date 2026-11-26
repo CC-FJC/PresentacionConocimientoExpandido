@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Refrigeración por Circuito Cerrado en Centros de Datos (15s)</title>
+  <style>
+    :root {
+      --bg-dark: #070b14;
+      --panel-bg: rgba(12, 19, 34, 0.82);
+      --border-color: rgba(100, 180, 255, 0.22);
+      --cold-blue: #00d2ff;
+      --warm-orange: #ff8c00;
+      --hot-red: #ff3b30;
+      --text-main: #eef4ff;
+      --text-muted: #9bb0d1;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      user-select: none;
+    }
+
+    #canvas-container {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+    }
+
+    /* HUD Superior */
+    .hud-top {
+      position: fixed;
+      top: 18px;
+      left: 22px;
+      right: 22px;
+      z-index: 10;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      pointer-events: none;
+    }
+
+    .title-card {
+      background: var(--panel-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 14px 20px;
+      pointer-events: auto;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+    }
+
+    .title-card .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--cold-blue);
+      margin-bottom: 4px;
+    }
+
+    .title-card .badge .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--cold-blue);
+      box-shadow: 0 0 8px var(--cold-blue);
+    }
+
+    .title-card h1 {
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.25;
+    }
+
+    .title-card p {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    /* Leyenda térmica */
+    .legend-card {
+      background: var(--panel-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 12px 16px;
+      pointer-events: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    .swatch.cold { background: var(--cold-blue); box-shadow: 0 0 8px var(--cold-blue); }
+    .swatch.hot { background: var(--hot-red); box-shadow: 0 0 8px var(--hot-red); }
+    .swatch.secondary { background: var(--warm-orange); box-shadow: 0 0 8px var(--warm-orange); }
+
+    /* Etiquetas 3D flotantes */
+    #labels-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    .label-3d {
+      position: absolute;
+      transform: translate(-50%, -100%);
+      background: rgba(10, 16, 30, 0.85);
+      border: 1px solid rgba(130, 190, 255, 0.3);
+      border-radius: 8px;
+      padding: 5px 10px;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text-main);
+      white-space: nowrap;
+      backdrop-filter: blur(6px);
+      transition: border-color 0.3s, box-shadow 0.3s, opacity 0.3s, transform 0.2s;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+    }
+
+    .label-3d::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      bottom: -6px;
+      transform: translateX(-50%);
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 6px solid rgba(130, 190, 255, 0.4);
+    }
+
+    .label-3d.active {
+      border-color: var(--cold-blue);
+      box-shadow: 0 0 16px rgba(0, 210, 255, 0.45);
+      transform: translate(-50%, -108%) scale(1.06);
+    }
+
+    .label-3d small {
+      display: block;
+      font-size: 10px;
+      font-weight: 400;
+      color: var(--text-muted);
+    }
+
+    /* HUD Inferior: Narrativa y Línea de Tiempo */
+    .hud-bottom {
+      position: fixed;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(880px, calc(100vw - 36px));
+      z-index: 10;
+      background: var(--panel-bg);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 16px 20px;
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.55);
+    }
+
+    .phase-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      gap: 12px;
+    }
+
+    .phase-tag {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--cold-blue);
+      background: rgba(0, 210, 255, 0.12);
+      border: 1px solid rgba(0, 210, 255, 0.3);
+      padding: 3px 9px;
+      border-radius: 999px;
+    }
+
+    .timer-display {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .phase-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .phase-desc {
+      font-size: 13.5px;
+      color: #c8d6ee;
+      line-height: 1.45;
+      min-height: 38px;
+    }
+
+    /* Barra de progreso interactiva (15s) */
+    .timeline-wrapper {
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .progress-bar-bg {
+      position: relative;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 999px;
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--cold-blue), #3b82f6, var(--hot-red), var(--cold-blue));
+      border-radius: 999px;
+      transition: width 0.05s linear;
+    }
+
+    .controls-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .btn-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    button {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-main);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 8px;
+      padding: 6px 13px;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    button:hover {
+      background: rgba(0, 210, 255, 0.18);
+      border-color: rgba(0, 210, 255, 0.45);
+    }
+
+    button.active-btn {
+      background: rgba(0, 210, 255, 0.24);
+      border-color: var(--cold-blue);
+      color: #ffffff;
+    }
+
+    .efficiency-pill {
+      font-size: 12px;
+      color: #7ee787;
+      background: rgba(46, 160, 67, 0.14);
+      border: 1px solid rgba(63, 185, 80, 0.35);
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-weight: 600;
+    }
+
+    @media (max-width: 700px) {
+      .hud-top { flex-direction: column; }
+      .legend-card { flex-direction: row; flex-wrap: wrap; }
+      .title-card h1 { font-size: 15px; }
+    }
+  </style>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+
+  <div id="canvas-container"></div>
+  <div id="labels-layer"></div>
+
+  <!-- HUD Superior -->
+  <div class="hud-top">
+    <div class="title-card">
+      <div class="badge"><span class="dot"></span> Animación Explicativa 3D • 15 Segundos</div>
+      <h1>Refrigeración por Circuito Cerrado en Centros de Datos</h1>
+      <p>Transferencia térmica continua sin evaporación ni desperdicio de agua</p>
+    </div>
+
+    <div class="legend-card">
+      <div class="legend-item"><span class="swatch cold"></span><span>Refrigerante Frío (22 °C)</span></div>
+      <div class="legend-item"><span class="swatch hot"></span><span>Refrigerante Caliente (55 °C)</span></div>
+      <div class="legend-item"><span class="swatch secondary"></span><span>Circuito Secundario (Exterior)</span></div>
+    </div>
+  </div>
+
+  <!-- HUD Inferior -->
+  <div class="hud-bottom">
+    <div class="phase-header">
+      <span class="phase-tag" id="phase-tag">Fase 1 de 5</span>
+      <span class="timer-display" id="timer-display">00.0s / 15.0s</span>
+    </div>
+    <div class="phase-title" id="phase-title">1. Generación de calor en los servidores</div>
+    <div class="phase-desc" id="phase-desc">
+      Los procesadores de alto rendimiento generan calor intenso dentro de los bastidores del centro de datos.
+    </div>
+
+    <div class="timeline-wrapper">
+      <div class="progress-bar-bg" id="progress-bar" title="Haz clic para saltar a cualquier segundo">
+        <div class="progress-bar-fill" id="progress-fill"></div>
+      </div>
+
+      <div class="controls-row">
+        <div class="btn-group">
+          <button id="btn-play-pause">⏸ Pausar</button>
+          <button id="btn-restart">↺ Reiniciar (0s)</button>
+          <button id="btn-camera-mode">🎥 Cámara Guiada</button>
+        </div>
+        <div class="efficiency-pill">💧 0% Pérdida por evaporación</div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    // =========================================================================
+    // 1. CONFIGURACIÓN DE ESCENA, CÁMARA Y RENDERIZADOR
+    // =========================================================================
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x070b14);
+    scene.fog = new THREE.FogExp2(0x070b14, 0.018);
+
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 150);
+    camera.position.set(-2, 8.5, 16);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.15;
+    container.appendChild(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.06;
+    controls.maxPolarAngle = Math.PI / 2 - 0.04;
+    controls.enabled = false; // Inicia en modo Cámara Guiada
+
+    // =========================================================================
+    // 2. ILUMINACIÓN Y ENTORNO (SALA DE SERVIDORES VS EXTERIOR)
+    // =========================================================================
+    const ambientLight = new THREE.AmbientLight(0x8aa8d8, 0.65);
+    scene.add(ambientLight);
+
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.4);
+    dirLight.position.set(8, 16, 10);
+    dirLight.castShadow = true;
+    dirLight.shadow.mapSize.set(2048, 2048);
+    dirLight.shadow.camera.near = 2;
+    dirLight.shadow.camera.far = 45;
+    dirLight.shadow.camera.left = -16;
+    dirLight.shadow.camera.right = 16;
+    dirLight.shadow.camera.top = 12;
+    dirLight.shadow.camera.bottom = -12;
+    scene.add(dirLight);
+
+    const rackLight = new THREE.PointLight(0xff4d1a, 2.5, 10);
+    rackLight.position.set(-6.5, 2.5, 0);
+    scene.add(rackLight);
+
+    const cduLight = new THREE.PointLight(0x00d2ff, 1.8, 9);
+    cduLight.position.set(0.5, 2.2, 0);
+    scene.add(cduLight);
+
+    // Piso técnico del Centro de Datos (Interior)
+    const indoorFloor = new THREE.Mesh(
+      new THREE.BoxGeometry(15, 0.3, 12),
+      new THREE.MeshStandardMaterial({ color: 0x101829, roughness: 0.45, metalness: 0.25 })
+    );
+    indoorFloor.position.set(-3, -0.15, 0);
+    indoorFloor.receiveShadow = true;
+    scene.add(indoorFloor);
+
+    const indoorGrid = new THREE.GridHelper(12, 24, 0x264470, 0x16253f);
+    indoorGrid.position.set(-3, 0.01, 0);
+    scene.add(indoorGrid);
+
+    // Plataforma Exterior (Concreto / Acero)
+    const outdoorFloor = new THREE.Mesh(
+      new THREE.BoxGeometry(9.5, 0.3, 12),
+      new THREE.MeshStandardMaterial({ color: 0x181f29, roughness: 0.85, metalness: 0.1 })
+    );
+    outdoorFloor.position.set(9.25, -0.15, 0);
+    outdoorFloor.receiveShadow = true;
+    scene.add(outdoorFloor);
+
+    // Muro divisorio de vidrio entre Sala de Datos y Exterior
+    const glassWall = new THREE.Mesh(
+      new THREE.BoxGeometry(0.12, 5.2, 12),
+      new THREE.MeshPhysicalMaterial({
+        color: 0x88ccff,
+        transparent: true,
+        opacity: 0.14,
+        roughness: 0.1,
+        metalness: 0.1,
+        transmission: 0.4
+      })
+    );
+    glassWall.position.set(4.5, 2.6, 0);
+    scene.add(glassWall);
+
+    const wallFrame = new THREE.Mesh(
+      new THREE.BoxGeometry(0.18, 0.18, 12),
+      new THREE.MeshStandardMaterial({ color: 0x334766, metalness: 0.7, roughness: 0.3 })
+    );
+    wallFrame.position.set(4.5, 5.2, 0);
+    scene.add(wallFrame);
+
+    // =========================================================================
+    // 3. BASTIDORES DE SERVIDORES (RACKS) CON PLACAS FRÍAS Y NÚCLEOS TÉRMICOS
+    // =========================================================================
+    const rackZPositions = [-3.2, 0, 3.2];
+    const heatCoreMaterials = [];
+    const coldPlateMaterials = [];
+
+    rackZPositions.forEach((zPos) => {
+      const rackGroup = new THREE.Group();
+      rackGroup.position.set(-6.5, 0, zPos);
+
+      // Chasis principal del rack
+      const chassis = new THREE.Mesh(
+        new THREE.BoxGeometry(1.9, 4.0, 2.2),
+        new THREE.MeshStandardMaterial({
+          color: 0x141d2e,
+          roughness: 0.4,
+          metalness: 0.75,
+          transparent: true,
+          opacity: 0.82
+        })
+      );
+      chassis.position.y = 2.0;
+      chassis.castShadow = true;
+      chassis.receiveShadow = true;
+      rackGroup.add(chassis);
+
+      // Borde luminoso frontal
+      const edges = new THREE.EdgesGeometry(new THREE.BoxGeometry(1.92, 4.02, 2.22));
+      const edgeLine = new THREE.LineSegments(
+        edges,
+        new THREE.LineBasicMaterial({ color: 0x2d4a77 })
+      );
+      edgeLine.position.y = 2.0;
+      rackGroup.add(edgeLine);
+
+      // Cuchillas de servidor (blades) y núcleos que generan calor
+      for (let b = 0; b < 6; b++) {
+        const yBlade = 0.7 + b * 0.52;
+
+        const blade = new THREE.Mesh(
+          new THREE.BoxGeometry(1.6, 0.3, 1.85),
+          new THREE.MeshStandardMaterial({ color: 0x1e2c44, metalness: 0.6, roughness: 0.35 })
+        );
+        blade.position.y = yBlade;
+        rackGroup.add(blade);
+
+        // Núcleo térmico (CPU/GPU) que brilla en naranja/rojo
+        const heatMat = new THREE.MeshStandardMaterial({
+          color: 0xff4500,
+          emissive: 0xff3300,
+          emissiveIntensity: 1.4
+        });
+        heatCoreMaterials.push(heatMat);
+
+        const heatCore = new THREE.Mesh(new THREE.BoxGeometry(1.66, 0.12, 1.4), heatMat);
+        heatCore.position.y = yBlade + 0.05;
+        rackGroup.add(heatCore);
+
+        // Placa fría (Cold Plate) acoplada al servidor
+        const plateMat = new THREE.MeshStandardMaterial({
+          color: 0x00a8ff,
+          emissive: 0x0066cc,
+          emissiveIntensity: 0.6,
+          metalness: 0.8,
+          roughness: 0.2
+        });
+        coldPlateMaterials.push(plateMat);
+
+        const coldPlate = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.22, 1.65), plateMat);
+        coldPlate.position.set(0.85, yBlade, 0);
+        rackGroup.add(coldPlate);
+      }
+
+      scene.add(rackGroup);
+    });
+
+    // =========================================================================
+    // 4. CDU (UNIDAD DE DISTRIBUCIÓN DE REFRIGERANTE / INTERCAMBIADOR)
+    // =========================================================================
+    const cduGroup = new THREE.Group();
+    cduGroup.position.set(0.5, 0, 0);
+
+    // Gabinete exterior translúcido
+    const cduBody = new THREE.Mesh(
+      new THREE.BoxGeometry(2.3, 3.1, 3.6),
+      new THREE.MeshStandardMaterial({
+        color: 0x162338,
+        roughness: 0.3,
+        metalness: 0.7,
+        transparent: true,
+        opacity: 0.72
+      })
+    );
+    cduBody.position.y = 1.55;
+    cduBody.castShadow = true;
+    cduGroup.add(cduBody);
+
+    const cduEdges = new THREE.LineSegments(
+      new THREE.EdgesGeometry(new THREE.BoxGeometry(2.32, 3.12, 3.62)),
+      new THREE.LineBasicMaterial({ color: 0x00b4d8 })
+    );
+    cduEdges.position.y = 1.55;
+    cduGroup.add(cduEdges);
+
+    // Placas metálicas del intercambiador de calor interno
+    for (let i = -5; i <= 5; i++) {
+      const plate = new THREE.Mesh(
+        new THREE.BoxGeometry(1.1, 1.8, 0.06),
+        new THREE.MeshStandardMaterial({
+          color: i % 2 === 0 ? 0x62b6cb : 0xd97706,
+          metalness: 0.85,
+          roughness: 0.2
+        })
+      );
+      plate.position.set(0, 1.55, i * 0.22);
+      cduGroup.add(plate);
+    }
+
+    // Bomba hidráulica giratoria en la parte frontal
+    const pumpHousing = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.55, 0.55, 0.35, 24),
+      new THREE.MeshStandardMaterial({ color: 0x263854, metalness: 0.8, roughness: 0.25 })
+    );
+    pumpHousing.rotation.x = Math.PI / 2;
+    pumpHousing.position.set(-0.4, 0.85, 1.85);
+    cduGroup.add(pumpHousing);
+
+    const pumpRotor = new THREE.Group();
+    pumpRotor.position.set(-0.4, 0.85, 2.05);
+    for (let k = 0; k < 4; k++) {
+      const fin = new THREE.Mesh(
+        new THREE.BoxGeometry(0.75, 0.1, 0.08),
+        new THREE.MeshStandardMaterial({ color: 0x00d2ff, emissive: 0x0088cc, emissiveIntensity: 0.7 })
+      );
+      fin.rotation.z = (k * Math.PI) / 4;
+      pumpRotor.add(fin);
+    }
+    cduGroup.add(pumpRotor);
+    scene.add(cduGroup);
+
+    // =========================================================================
+    // 5. ENFRIADOR SECO EXTERIOR (DRY COOLER) CON VENTILADORES
+    // =========================================================================
+    const dryCoolerGroup = new THREE.Group();
+    dryCoolerGroup.position.set(9.2, 0, 0);
+
+    // Estructura principal
+    const dcFrame = new THREE.Mesh(
+      new THREE.BoxGeometry(4.2, 2.3, 4.8),
+      new THREE.MeshStandardMaterial({ color: 0x1c2738, metalness: 0.65, roughness: 0.35 })
+    );
+    dcFrame.position.y = 1.45;
+    dcFrame.castShadow = true;
+    dryCoolerGroup.add(dcFrame);
+
+    // Patas de soporte
+    [[-1.8, -2.1], [1.8, -2.1], [-1.8, 2.1], [1.8, 2.1]].forEach(([lx, lz]) => {
+      const leg = new THREE.Mesh(
+        new THREE.BoxGeometry(0.25, 0.6, 0.25),
+        new THREE.MeshStandardMaterial({ color: 0x3a4a63, metalness: 0.8 })
+      );
+      leg.position.set(lx, 0.3, lz);
+      dryCoolerGroup.add(leg);
+    });
+
+    // Serpentín / Radiador superior
+    const radiatorMesh = new THREE.Mesh(
+      new THREE.BoxGeometry(3.8, 0.25, 4.4),
+      new THREE.MeshStandardMaterial({ color: 0x7f8ea3, metalness: 0.85, roughness: 0.25 })
+    );
+    radiatorMesh.position.y = 2.65;
+    dryCoolerGroup.add(radiatorMesh);
+
+    // Dos grandes ventiladores axiales en la parte superior
+    const fans = [];
+    [-1.15, 1.15].forEach((fz) => {
+      const shroud = new THREE.Mesh(
+        new THREE.CylinderGeometry(1.05, 1.05, 0.35, 32, 1, true),
+        new THREE.MeshStandardMaterial({ color: 0x2e3d54, side: THREE.DoubleSide, metalness: 0.7 })
+      );
+      shroud.position.set(0, 2.9, fz);
+      dryCoolerGroup.add(shroud);
+
+      const fanRotor = new THREE.Group();
+      fanRotor.position.set(0, 2.88, fz);
+
+      const hub = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.22, 0.22, 0.2, 16),
+        new THREE.MeshStandardMaterial({ color: 0x00d2ff, emissive: 0x005588 })
+      );
+      fanRotor.add(hub);
+
+      for (let b = 0; b < 5; b++) {
+        const blade = new THREE.Mesh(
+          new THREE.BoxGeometry(0.85, 0.04, 0.24),
+          new THREE.MeshStandardMaterial({ color: 0xcbd5e1, metalness: 0.6, roughness: 0.3 })
+        );
+        const angle = (b * Math.PI * 2) / 5;
+        blade.position.set(Math.cos(angle) * 0.5, 0, Math.sin(angle) * 0.5);
+        blade.rotation.y = -angle;
+        blade.rotation.x = 0.35;
+        fanRotor.add(blade);
+      }
+      dryCoolerGroup.add(fanRotor);
+      fans.push(fanRotor);
+    });
+
+    scene.add(dryCoolerGroup);
+
+    // Partículas de aire caliente ascendiendo desde el Dry Cooler
+    const airParticles = [];
+    const airGeo = new THREE.SphereGeometry(0.08, 8, 8);
+    for (let i = 0; i < 36; i++) {
+      const airMat = new THREE.MeshBasicMaterial({
+        color: 0xffb366,
+        transparent: true,
+        opacity: 0.45
+      });
+      const p = new THREE.Mesh(airGeo, airMat);
+      p.userData = {
+        xBase: 9.2 + (Math.random() - 0.5) * 2.2,
+        zBase: (Math.random() > 0.5 ? 1.15 : -1.15) + (Math.random() - 0.5) * 1.4,
+        phase: Math.random()
+      };
+      scene.add(p);
+      airParticles.push(p);
+    }
+
+    // =========================================================================
+    // 6. TUBERÍAS DE CIRCUITO CERRADO Y PARTÍCULAS DE FLUIDO
+    // =========================================================================
+    const pipeMaterial = new THREE.MeshPhysicalMaterial({
+      color: 0x99ccff,
+      transparent: true,
+      opacity: 0.26,
+      roughness: 0.12,
+      metalness: 0.1,
+      depthWrite: false
+    });
+
+    const primaryLoops = [];
+    const primaryParticles = [];
+    const fluidGeo = new THREE.SphereGeometry(0.095, 12, 12);
+
+    // Circuito Primario Cerrado: CDU -> Placas Frías (3 Racks) -> CDU
+    rackZPositions.forEach((zRack) => {
+      const zCdu = zRack * 0.32;
+      const points = [
+        new THREE.Vector3(-0.3, 0.65, zCdu),     // Salida fría de CDU
+        new THREE.Vector3(-3.0, 0.65, zRack),    // Suministro inferior
+        new THREE.Vector3(-5.55, 0.65, zRack),   // Entrada inferior al rack
+        new THREE.Vector3(-5.65, 1.9, zRack),    // Subida por placa fría (absorbe calor)
+        new THREE.Vector3(-5.55, 3.4, zRack),    // Salida superior caliente del rack
+        new THREE.Vector3(-3.0, 3.4, zRack),     // Retorno superior caliente
+        new THREE.Vector3(-0.3, 2.5, zCdu),      // Entrada caliente a CDU
+        new THREE.Vector3(0.25, 1.6, zCdu)       // Paso descendente por intercambiador CDU
+      ];
+
+      const curve = new THREE.CatmullRomCurve3(points, true, 'catmullrom', 0.2);
+      primaryLoops.push(curve);
+
+      const tubeMesh = new THREE.Mesh(new THREE.TubeGeometry(curve, 110, 0.13, 12, true), pipeMaterial);
+      scene.add(tubeMesh);
+
+      // Crear gotas/partículas de refrigerante en este bucle cerrado
+      const count = 28;
+      for (let i = 0; i < count; i++) {
+        const mat = new THREE.MeshBasicMaterial({ color: 0x00d2ff });
+        const drop = new THREE.Mesh(fluidGeo, mat);
+        scene.add(drop);
+        primaryParticles.push({
+          mesh: drop,
+          curve: curve,
+          offset: i / count
+        });
+      }
+    });
+
+    // Circuito Secundario Cerrado: CDU <-> Muro de Vidrio <-> Dry Cooler Exterior
+    const secondaryPoints = [
+      new THREE.Vector3(0.85, 2.35, -0.9),   // Salida tibia de CDU hacia exterior
+      new THREE.Vector3(4.5, 2.35, -1.1),    // Atraviesa pared hacia exterior
+      new THREE.Vector3(7.6, 2.35, -1.3),    // Entrada al serpentín del Dry Cooler
+      new THREE.Vector3(10.6, 2.35, -0.6),   // Recorrido radiador
+      new THREE.Vector3(10.6, 2.35, 0.8),    // Curva en radiador (se enfría)
+      new THREE.Vector3(7.6, 1.0, 1.3),      // Salida enfriada del Dry Cooler
+      new THREE.Vector3(4.5, 0.8, 1.1),      // Retorno hacia sala técnica
+      new THREE.Vector3(0.85, 0.8, 0.9),     // Entrada fría secundaria a CDU
+      new THREE.Vector3(0.65, 1.6, 0.0)      // Absorbe calor dentro del intercambiador CDU
+    ];
+
+    const secondaryCurve = new THREE.CatmullRomCurve3(secondaryPoints, true, 'catmullrom', 0.22);
+    const secondaryTube = new THREE.Mesh(
+      new THREE.TubeGeometry(secondaryCurve, 120, 0.15, 12, true),
+      pipeMaterial
+    );
+    scene.add(secondaryTube);
+
+    const secondaryParticles = [];
+    const secCount = 36;
+    for (let i = 0; i < secCount; i++) {
+      const mat = new THREE.MeshBasicMaterial({ color: 0xff8c00 });
+      const drop = new THREE.Mesh(new THREE.SphereGeometry(0.11, 12, 12), mat);
+      scene.add(drop);
+      secondaryParticles.push({
+        mesh: drop,
+        curve: secondaryCurve,
+        offset: i / secCount
+      });
+    }
+
+    // Colores de referencia para interpolación térmica
+    const colorCold = new THREE.Color(0x00d2ff);
+    const colorHot = new THREE.Color(0xff3b30);
+    const colorSecWarm = new THREE.Color(0xff8c00);
+    const colorSecCool = new THREE.Color(0x00b4d8);
+
+    // =========================================================================
+    // 7. ETIQUETAS 3D PROYECTADAS EN ESPAÑOL
+    // =========================================================================
+    const labelsLayer = document.getElementById('labels-layer');
+    const labelConfigs = [
+      {
+        id: 'racks',
+        title: 'Bastidores de Servidores',
+        sub: 'Placas frías absorben el calor',
+        pos: new THREE.Vector3(-6.5, 4.35, 0),
+        phases: [0, 1]
+      },
+      {
+        id: 'supply',
+        title: 'Línea Fría (22 °C)',
+        sub: 'Suministro en bucle cerrado',
+        pos: new THREE.Vector3(-3.1, 0.9, 3.2),
+        phases: [1, 4]
+      },
+      {
+        id: 'return',
+        title: 'Línea Caliente (55 °C)',
+        sub: 'Retorno térmico sin pérdidas',
+        pos: new THREE.Vector3(-3.1, 3.65, 3.2),
+        phases: [2]
+      },
+      {
+        id: 'cdu',
+        title: 'CDU / Intercambiador',
+        sub: 'Transfiere calor entre circuitos',
+        pos: new THREE.Vector3(0.5, 3.4, 0),
+        phases: [2]
+      },
+      {
+        id: 'drycooler',
+        title: 'Enfriador Seco (Exterior)',
+        sub: 'Disipa calor al aire (0% agua)',
+        pos: new THREE.Vector3(9.2, 3.6, 0),
+        phases: [3, 4]
+      }
+    ];
+
+    labelConfigs.forEach((cfg) => {
+      const el = document.createElement('div');
+      el.className = 'label-3d';
+      el.innerHTML = `${cfg.title}<small>${cfg.sub}</small>`;
+      labelsLayer.appendChild(el);
+      cfg.el = el;
+    });
+
+    // =========================================================================
+    // 8. GUION DE 15 SEGUNDOS Y COREOGRAFÍA DE CÁMARA
+    // =========================================================================
+    const DURATION = 15.0;
+    const phases = [
+      {
+        start: 0.0, end: 3.0,
+        tag: 'Fase 1 de 5 (0s – 3s)',
+        title: '1. Generación de calor en los servidores',
+        desc: 'Los procesadores de alta densidad generan calor intenso. Las placas frías acopladas capturan esa energía térmica directamente.'
+      },
+      {
+        start: 3.0, end: 6.5,
+        tag: 'Fase 2 de 5 (3s – 6.5s)',
+        title: '2. Absorción térmica en circuito cerrado',
+        desc: 'El refrigerante frío (22 °C) circula por las tuberías selladas, absorbe el calor de las placas frías y alcanza 55 °C sin evaporarse.'
+      },
+      {
+        start: 6.5, end: 10.0,
+        tag: 'Fase 3 de 5 (6.5s – 10s)',
+        title: '3. Intercambio de calor en la CDU',
+        desc: 'El fluido caliente regresa a la CDU. Sus placas metálicas transfieren el calor al circuito secundario sin mezclar los líquidos.'
+      },
+      {
+        start: 10.0, end: 13.0,
+        tag: 'Fase 4 de 5 (10s – 13s)',
+        title: '4. Disipación al aire exterior (Dry Cooler)',
+        desc: 'El circuito secundario lleva el calor al enfriador seco exterior, donde los ventiladores lo liberan al aire ambiente sin gastar agua.'
+      },
+      {
+        start: 13.0, end: 15.0,
+        tag: 'Fase 5 de 5 (13s – 15s)',
+        title: '5. Ciclo continuo y sostenible (0% evaporación)',
+        desc: 'El refrigerante ya enfriado vuelve a los servidores en un bucle cerrado hermético, reduciendo drásticamente el consumo hídrico.'
+      }
+    ];
+
+    // Keyframes de cámara para una transición cinematográfica de 15 segundos
+    const camKeyframes = [
+      { t: 0.0,  pos: new THREE.Vector3(-1.5, 8.8, 16.5), target: new THREE.Vector3(0.5, 1.8, 0) },
+      { t: 2.8,  pos: new THREE.Vector3(-10.2, 3.8, 6.2), target: new THREE.Vector3(-6.2, 2.2, 0.2) },
+      { t: 5.8,  pos: new THREE.Vector3(-3.2, 3.2, 8.6),  target: new THREE.Vector3(-3.2, 1.9, 0) },
+      { t: 8.8,  pos: new THREE.Vector3(1.6, 3.4, 7.2),   target: new THREE.Vector3(0.5, 1.6, 0) },
+      { t: 11.8, pos: new THREE.Vector3(12.2, 5.2, 8.2),  target: new THREE.Vector3(8.8, 2.0, 0) },
+      { t: 14.8, pos: new THREE.Vector3(-1.5, 8.8, 16.5), target: new THREE.Vector3(0.5, 1.8, 0) }
+    ];
+
+    function getInterpolatedCamera(t) {
+      let k0 = camKeyframes[0];
+      let k1 = camKeyframes[camKeyframes.length - 1];
+      for (let i = 0; i < camKeyframes.length - 1; i++) {
+        if (t >= camKeyframes[i].t && t <= camKeyframes[i + 1].t) {
+          k0 = camKeyframes[i];
+          k1 = camKeyframes[i + 1];
+          break;
+        }
+      }
+      const span = Math.max(0.001, k1.t - k0.t);
+      const raw = THREE.MathUtils.clamp((t - k0.t) / span, 0, 1);
+      // Suavizado tipo smoothstep
+      const alpha = raw * raw * (3 - 2 * raw);
+
+      const pos = new THREE.Vector3().lerpVectors(k0.pos, k1.pos, alpha);
+      const target = new THREE.Vector3().lerpVectors(k0.target, k1.target, alpha);
+      return { pos, target };
+    }
+
+    // =========================================================================
+    // 9. CONTROLES DE INTERFAZ Y BUCLE DE ANIMACIÓN
+    // =========================================================================
+    const elTag = document.getElementById('phase-tag');
+    const elTitle = document.getElementById('phase-title');
+    const elDesc = document.getElementById('phase-desc');
+    const elTimer = document.getElementById('timer-display');
+    const elFill = document.getElementById('progress-fill');
+    const elProgressBar = document.getElementById('progress-bar');
+    const btnPlayPause = document.getElementById('btn-play-pause');
+    const btnRestart = document.getElementById('btn-restart');
+    const btnCameraMode = document.getElementById('btn-camera-mode');
+
+    let currentTime = 0;
+    let isPlaying = true;
+    let freeCamera = false;
+    let lastTimestamp = performance.now();
+
+    btnPlayPause.addEventListener('click', () => {
+      isPlaying = !isPlaying;
+      btnPlayPause.textContent = isPlaying ? '⏸ Pausar' : '▶ Reproducir';
+    });
+
+    btnRestart.addEventListener('click', () => {
+      currentTime = 0;
+      isPlaying = true;
+      btnPlayPause.textContent = '⏸ Pausar';
+    });
+
+    btnCameraMode.addEventListener('click', () => {
+      freeCamera = !freeCamera;
+      controls.enabled = freeCamera;
+      btnCameraMode.textContent = freeCamera ? '🖱 Cámara Libre (Activa)' : '🎥 Cámara Guiada';
+      btnCameraMode.classList.toggle('active-btn', freeCamera);
+    });
+
+    elProgressBar.addEventListener('click', (e) => {
+      const rect = elProgressBar.getBoundingClientRect();
+      const ratio = THREE.MathUtils.clamp((e.clientX - rect.left) / rect.width, 0, 1);
+      currentTime = ratio * DURATION;
+    });
+
+    function updateUI(t, activePhaseIndex) {
+      const p = phases[activePhaseIndex];
+      elTag.textContent = p.tag;
+      elTitle.textContent = p.title;
+      elDesc.textContent = p.desc;
+      elTimer.textContent = `${t.toFixed(1).padStart(4, '0')}s / 15.0s`;
+      elFill.style.width = `${(t / DURATION) * 100}%`;
+
+      labelConfigs.forEach((cfg) => {
+        const isActive = cfg.phases.includes(activePhaseIndex);
+        cfg.el.classList.toggle('active', isActive);
+      });
+    }
+
+    function updateLabels3D() {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      labelConfigs.forEach((cfg) => {
+        const projected = cfg.pos.clone().project(camera);
+        if (projected.z > 1) {
+          cfg.el.style.opacity = '0';
+          return;
+        }
+        const x = (projected.x * 0.5 + 0.5) * width;
+        const y = (-(projected.y * 0.5) + 0.5) * height;
+        cfg.el.style.left = `${x}px`;
+        cfg.el.style.top = `${y}px`;
+        cfg.el.style.opacity = '1';
+      });
+    }
+
+    function animate(now) {
+      requestAnimationFrame(animate);
+      const dt = Math.min((now - lastTimestamp) / 1000, 0.1);
+      lastTimestamp = now;
+
+      if (isPlaying) {
+        currentTime = (currentTime + dt) % DURATION;
+      }
+
+      // Determinar fase activa
+      let activePhaseIndex = 0;
+      for (let i = 0; i < phases.length; i++) {
+        if (currentTime >= phases[i].start && currentTime <= phases[i].end) {
+          activePhaseIndex = i;
+          break;
+        }
+      }
+
+      // 1. Animar pulsos térmicos en núcleos de servidores
+      const heatPulse = 1.1 + Math.sin(now * 0.005) * 0.45 + (activePhaseIndex === 0 ? 0.55 : 0);
+      heatCoreMaterials.forEach((m) => (m.emissiveIntensity = heatPulse));
+
+      // 2. Animar giro de bomba hidráulica (CDU) y ventiladores (Dry Cooler)
+      const spinSpeed = isPlaying ? dt * 6.5 : dt * 2.0;
+      pumpRotor.rotation.z -= spinSpeed;
+      fans.forEach((fan) => (fan.rotation.y += spinSpeed * 1.4));
+
+      // 3. Animar fluido en el circuito primario (color según posición física)
+      const flowSpeed = 0.22;
+      const flowShift = (now * 0.001 * flowSpeed) % 1;
+
+      primaryParticles.forEach((item) => {
+        const u = (item.offset + flowShift) % 1;
+        const pos = item.curve.getPointAt(u);
+        item.mesh.position.copy(pos);
+
+        if (pos.x < -5.1) {
+          // Subiendo por las placas frías del rack -> Azul a Rojo
+          const heatRatio = THREE.MathUtils.clamp((pos.y - 0.8) / 2.5, 0, 1);
+          item.mesh.material.color.lerpColors(colorCold, colorHot, heatRatio);
+        } else if (pos.x >= -0.1) {
+          // Bajando por el intercambiador de la CDU -> Rojo a Azul
+          const coolRatio = THREE.MathUtils.clamp((2.4 - pos.y) / 1.7, 0, 1);
+          item.mesh.material.color.lerpColors(colorHot, colorCold, coolRatio);
+        } else if (pos.y > 2.0) {
+          // Tubería superior de retorno -> Caliente
+          item.mesh.material.color.copy(colorHot);
+        } else {
+          // Tubería inferior de suministro -> Frío
+          item.mesh.material.color.copy(colorCold);
+        }
+      });
+
+      // 4. Animar fluido en el circuito secundario (CDU <-> Dry Cooler)
+      const secFlowShift = (now * 0.001 * 0.18) % 1;
+      secondaryParticles.forEach((item) => {
+        const u = (item.offset + secFlowShift) % 1;
+        const pos = item.curve.getPointAt(u);
+        item.mesh.position.copy(pos);
+
+        if (pos.x > 7.5) {
+          // Enfriándose dentro del Dry Cooler (z de -1.3 a +1.3)
+          const ratio = THREE.MathUtils.clamp((pos.z + 1.3) / 2.6, 0, 1);
+          item.mesh.material.color.lerpColors(colorSecWarm, colorSecCool, ratio);
+        } else if (pos.x < 1.1) {
+          // Calentándose dentro de la CDU
+          const ratio = THREE.MathUtils.clamp((pos.y - 0.8) / 1.5, 0, 1);
+          item.mesh.material.color.lerpColors(colorSecCool, colorSecWarm, ratio);
+        } else if (pos.y > 1.7) {
+          item.mesh.material.color.copy(colorSecWarm);
+        } else {
+          item.mesh.material.color.copy(colorSecCool);
+        }
+      });
+
+      // 5. Animar partículas de aire caliente disipándose al exterior
+      airParticles.forEach((p) => {
+        const tAir = (p.userData.phase + now * 0.00055) % 1;
+        p.position.set(
+          p.userData.xBase + Math.sin(tAir * 6 + p.userData.phase * 10) * 0.15,
+          3.05 + tAir * 2.8,
+          p.userData.zBase
+        );
+        p.material.opacity = (1 - tAir) * 0.55;
+        p.scale.setScalar(0.7 + tAir * 1.1);
+      });
+
+      // 6. Actualizar Cámara Guiada o OrbitControls
+      if (!freeCamera) {
+        const camState = getInterpolatedCamera(currentTime);
+        camera.position.lerp(camState.pos, 0.08);
+        controls.target.lerp(camState.target, 0.08);
+        camera.lookAt(controls.target);
+      } else {
+        controls.update();
+      }
+
+      updateUI(currentTime, activePhaseIndex);
+      updateLabels3D();
+      renderer.render(scene, camera);
+    }
+
+    // Ajuste responsivo al cambiar el tamaño de la ventana
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    requestAnimationFrame(animate);
+  </script>
+</body>
+</html>
